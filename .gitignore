@@ -1,0 +1,28 @@
+# Env / secrets
+.env
+backend/.env
+frontend/.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# App data (ignore generated contents, keep the directories themselves via .gitkeep)
+backend/storage/documents/*
+backend/storage/screenshots/*
+!backend/storage/documents/.gitkeep
+!backend/storage/screenshots/.gitkeep
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/

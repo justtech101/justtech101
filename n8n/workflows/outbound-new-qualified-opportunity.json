@@ -1,0 +1,53 @@
+{
+  "name": "JUSTTECH - New Qualified Opportunity Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "justtech-qualified-opportunity",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "1a1a1a1a-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "webhookId": "justtech-qualified-opportunity"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? $input.first().json;\nreturn [{\n  json: {\n    text: `New qualified ${body.type}: *${body.title}* at ${body.organization || 'Unknown org'} — score ${body.score}/100. ${body.source_url || ''}`,\n    raw: body\n  }\n}];"
+      },
+      "id": "2b2b2b2b-0000-0000-0000-000000000002",
+      "name": "Format Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3c3c3c3c-0000-0000-0000-000000000003",
+      "name": "Send Notification (replace with Slack/Email/SMS node)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [780, 300],
+      "notes": "MANUAL SETUP REQUIRED: replace this No-Op node with a Slack, Email, or Telegram node configured with your own credentials. This placeholder exists so the workflow imports cleanly without requiring pre-configured secrets."
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Format Message", "type": "main", "index": 0 }]]
+    },
+    "Format Message": {
+      "main": [[{ "node": "Send Notification (replace with Slack/Email/SMS node)", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "meta": {
+    "instructions": "Import into n8n, then copy this workflow's Webhook node Production URL into the backend's N8N_OUTBOUND_WEBHOOK_URL env var. Replace the final No-Op node with a real notification node (Slack/Email/etc.) using your own n8n credentials."
+  }
+}
