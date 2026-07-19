@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "../api/client";
 import OpportunityCard from "../components/OpportunityCard";
+import ProfileSelect from "../components/ProfileSelect";
 import type { Board, BoardBucket } from "../types";
 
 const BUCKETS: { key: BoardBucket; label: string }[] = [
@@ -25,20 +26,21 @@ const EMPTY_BOARD: Board = {
 
 export default function Dashboard() {
   const [board, setBoard] = useState<Board>(EMPTY_BOARD);
+  const [profileId, setProfileId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     try {
       setError(null);
-      const data = await api.getBoard();
+      const data = await api.getBoard(profileId || undefined);
       setBoard(data);
     } catch (err) {
       setError(err instanceof ApiError ? `${err.status}: ${err.message}` : "Failed to reach the backend API.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [profileId]);
 
   useEffect(() => {
     refresh();
@@ -48,12 +50,17 @@ export default function Dashboard() {
 
   return (
     <div>
+      <div className="dashboard-toolbar">
+        <label>
+          Filter applications by profile
+          <ProfileSelect value={profileId} onChange={setProfileId} includeEmptyOption="All profiles" />
+        </label>
+        <button type="button" onClick={refresh}>
+          Refresh
+        </button>
+      </div>
       <div style={{ padding: "0 20px" }}>
-        {error && (
-          <p style={{ color: "#ae2e24" }}>
-            {error} — is the backend running at the URL in VITE_API_BASE_URL?
-          </p>
-        )}
+        {error && <p className="error-text">{error} — is the backend running at the URL in VITE_API_BASE_URL?</p>}
         {loading && !error && <p>Loading…</p>}
       </div>
       <div className="board">

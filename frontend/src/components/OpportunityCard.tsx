@@ -1,26 +1,26 @@
+import { Link } from "react-router-dom";
 import type { BoardCard } from "../types";
-
-function scoreClass(score: number | null): string {
-  if (score === null) return "score-mid";
-  if (score >= 70) return "score-high";
-  if (score >= 40) return "score-mid";
-  return "score-low";
-}
+import ScoreBadge from "./ScoreBadge";
 
 export default function OpportunityCard({ card }: { card: BoardCard }) {
+  const linkTo = card.application_id ? `/applications/${card.application_id}` : `/opportunities/${card.opportunity_id}`;
+
   return (
-    <div className="opportunity-card">
+    <Link to={linkTo} className="opportunity-card">
       <h3>{card.title}</h3>
       <div className="meta">
         {card.organization ?? "Unknown org"} &middot; {card.type}
         {card.deadline ? ` · due ${new Date(card.deadline).toLocaleDateString()}` : ""}
       </div>
-      {card.score !== null && (
-        <span className={`score-badge ${scoreClass(card.score)}`}>{card.score}/100</span>
-      )}
+      <ScoreBadge score={card.score} />
       {card.dry_run !== undefined && (
         <span className="dry-run-tag" style={{ marginLeft: 6 }}>
           {card.dry_run ? "dry run" : "live"}
+        </span>
+      )}
+      {card.human_approved !== undefined && (
+        <span className={`dry-run-tag ${card.human_approved ? "approved-tag" : ""}`} style={{ marginLeft: 6 }}>
+          {card.human_approved ? "approved" : "pending review"}
         </span>
       )}
       <div>
@@ -30,6 +30,6 @@ export default function OpportunityCard({ card }: { card: BoardCard }) {
           </span>
         ))}
       </div>
-    </div>
+    </Link>
   );
 }

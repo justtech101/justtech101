@@ -84,6 +84,7 @@ async def draft_document(application_id: uuid.UUID, payload: DraftRequest, db: A
         application.missing_fields = list(set((application.missing_fields or []) + draft.missing_fields))
         if application.status in ("new", "qualified"):
             application.status = "missing_info"
+            opportunity.status = "missing_info"
 
     await record_event(
         db,

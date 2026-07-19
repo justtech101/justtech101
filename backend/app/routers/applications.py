@@ -24,6 +24,18 @@ from app.services.audit import record_event
 router = APIRouter(prefix="/api/applications", tags=["applications"])
 
 
+async def _sync_opportunity_status(db: AsyncSession, application: Application) -> None:
+    """Keeps the opportunity's status mirroring its application's status once
+    an application exists, so the dashboard board never shows the same
+    opportunity in two columns at once (e.g. still 'qualified' while its
+    application is already 'submitted'). Application status values are a
+    subset of the opportunity status enum, so this assignment is always
+    valid."""
+    opportunity = await db.get(Opportunity, application.opportunity_id)
+    if opportunity:
+        opportunity.status = application.status
+
+
 @router.get("", response_model=list[ApplicationOut])
 async def list_applications(status: str | None = None, profile_id: uuid.UUID | None = None, db: AsyncSession = Depends(get_db)):
     query = select(Application)
@@ -62,6 +74,7 @@ async def create_application(payload: ApplicationCreate, db: AsyncSession = Depe
             "Duplicate application: this profile already has an application for this opportunity.",
         ) from exc
 
+    opportunity.status = application.status
     await record_event(
         db, entity_type="application", entity_id=application.id, event_type="created",
         actor_type="human", payload={"opportunity_id": str(opportunity.id), "profile_id": str(profile.id)}, commit=False,
@@ -87,6 +100,8 @@ async def update_application(application_id: uuid.UUID, payload: ApplicationUpda
     changes = payload.model_dump(exclude_unset=True)
     for key, value in changes.items():
         setattr(application, key, value)
+    if "status" in changes:
+        await _sync_opportunity_status(db, application)
     await record_event(
         db, entity_type="application", entity_id=application.id, event_type="updated",
         actor_type="human", payload={"changed_fields": list(changes.keys())}, commit=False,
@@ -110,6 +125,7 @@ async def approve_application(application_id: uuid.UUID, payload: ApplicationApp
     application.human_approved_by = payload.approved_by
     application.human_approved_at = datetime.now(timezone.utc)
     application.status = "ready_for_review"
+    await _sync_opportunity_status(db, application)
     await record_event(
         db, entity_type="application", entity_id=application.id, event_type="human_approved",
         actor_type="human", actor=payload.approved_by, commit=False,
@@ -133,6 +149,7 @@ async def confirm_submitted(application_id: uuid.UUID, payload: ApplicationSubmi
 
     application.status = "submitted"
     application.submitted_at = datetime.now(timezone.utc)
+    await _sync_opportunity_status(db, application)
     await record_event(
         db, entity_type="application", entity_id=application.id, event_type="submitted",
         actor_type="human", actor=payload.confirmed_by, commit=False,

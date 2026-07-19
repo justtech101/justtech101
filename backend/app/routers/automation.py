@@ -72,6 +72,7 @@ async def fill_application_form(application_id: uuid.UUID, payload: FillRequest,
 
     if result.status == "stopped_captcha":
         application.status = "missing_info"
+        opportunity.status = "missing_info"
         application.missing_fields = list(set((application.missing_fields or []) + ["captcha_blocked"]))
     elif result.status == "awaiting_human_review" and result.stopped_fields:
         application.missing_fields = list(set((application.missing_fields or []) + result.stopped_fields))

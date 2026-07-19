@@ -82,11 +82,19 @@ body {
 }
 
 .opportunity-card {
+  display: block;
   background: white;
   border-radius: 6px;
   padding: 10px;
   box-shadow: 0 1px 2px rgba(9, 30, 66, 0.25);
   font-size: 13px;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid transparent;
+}
+
+.opportunity-card:hover {
+  border-color: #4c9aff;
 }
 
 .opportunity-card h3 {
@@ -179,4 +187,361 @@ button:hover {
 .profile-list li {
   padding: 8px 0;
   border-bottom: 1px solid #dfe1e6;
+}
+
+.profile-list a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile-list a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Layout helpers ---- */
+
+.page-wide {
+  max-width: 1200px;
+}
+
+.page-subtitle {
+  color: #6b778c;
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+
+.dashboard-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 12px 20px 0;
+}
+
+.dashboard-toolbar label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.filter-bar label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.detail-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.15);
+}
+
+.detail-panel-wide {
+  grid-column: 1 / -1;
+}
+
+.detail-panel h2 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.detail-panel h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #44546f;
+  margin-bottom: 6px;
+}
+
+.detail-list {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 6px 10px;
+  margin: 0 0 12px;
+}
+
+.detail-list dt {
+  color: #6b778c;
+  font-size: 13px;
+}
+
+.detail-list dd {
+  margin: 0;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.description-text {
+  white-space: pre-wrap;
+  font-size: 13px;
+  background: #f4f5f7;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.error-text {
+  color: #ae2e24;
+  font-size: 13px;
+}
+
+.notice-text {
+  color: #1f845a;
+  font-size: 13px;
+}
+
+.muted {
+  color: #6b778c;
+}
+
+/* ---- Tables ---- */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 16px;
+  background: white;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ebecf0;
+  vertical-align: top;
+}
+
+.data-table th {
+  color: #44546f;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.mono-cell {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  max-width: 360px;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Badges ---- */
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-neutral,
+.status-neutral {
+  background: #ebecf0;
+  color: #44546f;
+}
+
+.status-new { background: #deebff; color: #0747a6; }
+.status-qualified { background: #e3fcef; color: #1f845a; }
+.status-missing { background: #ffebe6; color: #ae2e24; }
+.status-review { background: #fff0b3; color: #974f0c; }
+.status-submitted { background: #d3f1a7; color: #37471f; }
+.status-rejected { background: #ffbdad; color: #bf2600; }
+.status-followup { background: #eae6ff; color: #5243aa; }
+
+.approved-tag {
+  background: #e3fcef !important;
+  color: #1f845a !important;
+}
+
+/* ---- Chip input (skills) ---- */
+
+.chip-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 14px;
+  max-width: 480px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #deebff;
+  color: #0747a6;
+  border-radius: 12px;
+  padding: 2px 4px 2px 10px;
+  font-size: 12px;
+}
+
+.chip-remove {
+  background: transparent;
+  color: inherit;
+  border: none;
+  padding: 0 6px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.chip-remove:hover {
+  background: transparent;
+  color: #ae2e24;
+}
+
+.chip-input input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+  font-size: 13px;
+  padding: 2px;
+}
+
+/* ---- Key/value editor (eligibility, preferences, address, links) ---- */
+
+.kv-editor {
+  max-width: 480px;
+  margin-bottom: 14px;
+}
+
+.kv-row {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.kv-key {
+  font-size: 12px;
+  color: #44546f;
+  word-break: break-word;
+}
+
+.kv-row input {
+  padding: 6px 8px;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.kv-remove {
+  background: transparent;
+  color: #ae2e24;
+  border: none;
+  font-size: 14px;
+  padding: 0 6px;
+}
+
+.kv-remove:hover {
+  background: transparent;
+  text-decoration: underline;
+}
+
+/* ---- Misc form bits ---- */
+
+.form-grid-inline {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-auto-flow: column;
+  max-width: none;
+}
+
+.entry-card {
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.entry-card textarea {
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.danger-button {
+  background: #ffebe6;
+  color: #bf2600;
+}
+
+.danger-button:hover {
+  background: #ffbdad;
+}
+
+.draft-preview {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  padding: 10px;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+.fill-result {
+  background: #f4f5f7;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.screenshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.screenshot-grid figure {
+  margin: 0;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.screenshot-grid img {
+  width: 100%;
+  display: block;
+}
+
+.screenshot-grid figcaption {
+  font-size: 11px;
+  color: #6b778c;
+  padding: 4px 6px;
+  word-break: break-word;
 }
