@@ -78,7 +78,8 @@ justtech101/
 │       ├── pages/Profiles.tsx
 │       └── components/OpportunityCard.tsx
 ├── n8n/workflows/                 # importable example n8n workflows
-└── worker/README.md               # remote/split-topology worker notes
+├── worker/README.md               # remote/split-topology worker notes
+└── windows/                       # Windows desktop shortcut (icon + PowerShell launcher)
 ```
 
 ## 3. Database schema
@@ -187,6 +188,11 @@ docker compose up --build
 ```
 
 Backend on `:8000`, frontend on `:5173`, Postgres on `:5432`.
+
+**Windows desktop shortcut**: on the Surface Pro / Windows client, see
+[`windows/README.md`](windows/README.md) to create a "JUSTTECH Application
+Manager" desktop icon that starts everything with `docker compose` and
+opens the dashboard for you — no terminal needed after the one-time setup.
 
 ### 4.7 Configure your first ingestion sources
 
