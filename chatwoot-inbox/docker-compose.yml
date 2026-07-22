@@ -1,0 +1,17 @@
+# Runs just the gateway. Point it at your existing Chatwoot via CHATWOOT_URL
+# in .env. If you self-host Chatwoot with its own compose file, you can either
+# run this alongside it or merge this service into that file (put them on the
+# same Docker network so the gateway can reach Chatwoot by service name).
+
+services:
+  gateway:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

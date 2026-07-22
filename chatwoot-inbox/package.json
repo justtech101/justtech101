@@ -1,0 +1,20 @@
+{
+  "name": "chatwoot-unified-inbox-gateway",
+  "version": "0.1.0",
+  "description": "Gateway that bridges Discord, Twitch, Instagram and TikTok into a self-hosted Chatwoot as a single unified inbox, with auto-labelling and priority via a rules classifier.",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "express": "^4.21.2",
+    "tmi.js": "^1.8.5"
+  },
+  "license": "MIT"
+}
