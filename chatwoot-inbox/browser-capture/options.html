@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Chatwoot Inbox Capture — Options</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 480px; margin: 30px auto; padding: 0 16px; color: #111; }
+      h1 { font-size: 18px; }
+      label { display: block; margin: 14px 0 4px; font-size: 13px; color: #444; }
+      input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+      button { margin-top: 18px; background: #1f93ff; color: #fff; border: none; border-radius: 6px; padding: 10px 18px; font-size: 14px; cursor: pointer; }
+      .hint { font-size: 12px; color: #777; margin-top: 4px; }
+      .status { margin-top: 12px; font-size: 13px; color: #1a7f37; }
+    </style>
+  </head>
+  <body>
+    <h1>Chatwoot Inbox Capture</h1>
+    <p class="hint">These settings are stored in your browser and used only to POST captured messages to your gateway.</p>
+
+    <label for="gatewayUrl">Gateway URL</label>
+    <input id="gatewayUrl" placeholder="https://your-gateway-host" />
+    <div class="hint">Base URL of the chatwoot-inbox gateway (no trailing slash).</div>
+
+    <label for="endpointPath">Endpoint path</label>
+    <input id="endpointPath" placeholder="/webhooks/tiktok" />
+    <div class="hint">Which inbound webhook to hit. Default routes to the TikTok inbox.</div>
+
+    <label for="secret">Shared secret</label>
+    <input id="secret" type="password" placeholder="TIKTOK_INBOUND_SECRET value" />
+    <div class="hint">Must match the secret configured on the gateway.</div>
+
+    <button id="save">Save</button>
+    <div class="status" id="status"></div>
+
+    <script src="options.js"></script>
+  </body>
+</html>

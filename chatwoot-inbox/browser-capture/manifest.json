@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Chatwoot Inbox Capture",
+  "version": "0.1.0",
+  "description": "Human-in-the-loop: capture a message you're viewing (e.g. a TikTok DM) and send it into your self-hosted Chatwoot unified inbox.",
+  "permissions": ["storage", "contextMenus"],
+  "host_permissions": [
+    "*://*.tiktok.com/*",
+    "*://*.instagram.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["*://*.tiktok.com/*", "*://*.instagram.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

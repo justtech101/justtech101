@@ -123,6 +123,12 @@ Messaging partner, or a bridge you're licensed to use). Outbound replies are
 POSTed to `TIKTOK_OUTBOUND_URL` if set; otherwise the agent's reply is rejected
 loudly rather than silently dropped.
 
+For accounts without partner access, a **human-in-the-loop browser extension**
+is provided in [`browser-capture/`](./browser-capture/): you browse your DMs
+normally and click to send a message into this webhook. Read its README first —
+it is against TikTok's ToS (account-ban risk), capture-only, and fragile by
+nature. It's the pragmatic option, not a clean one.
+
 ## Tuning the classifier
 Everything lives in `src/classifier.js` — edit the keyword arrays (`RULES`,
 `ESCALATION_TERMS`) and the `PRIORITY_BY_CATEGORY` map. Re-run `npm test` after
