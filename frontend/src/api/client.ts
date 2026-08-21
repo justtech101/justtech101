@@ -8,6 +8,7 @@ import type {
   DraftResponse,
   FieldMapping,
   FillResponse,
+  HumanInput,
   IngestionSource,
   Opportunity,
   Profile,
@@ -136,6 +137,15 @@ export const api = {
     request<FillResponse>(`/api/applications/${applicationId}/fill`, {
       method: "POST",
       body: JSON.stringify({ field_map: fieldMap, headless }),
+    }),
+  // Completes exactly the paused fields (password/attestation/etc.) a human
+  // is supplying live, right now -- see form_filler.py. These values are
+  // never sent anywhere else and never stored; they're used once to fill
+  // that field on the already-open browser page.
+  resumeFill: (applicationId: string, humanInputs: HumanInput[]) =>
+    request<FillResponse>(`/api/applications/${applicationId}/resume-fill`, {
+      method: "POST",
+      body: JSON.stringify({ human_inputs: humanInputs }),
     }),
 
   // --- Ingestion sources -----------------------------------------------------

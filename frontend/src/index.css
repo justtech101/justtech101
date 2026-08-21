@@ -520,6 +520,28 @@ button:hover {
   margin-top: 10px;
 }
 
+.human-input-panel {
+  background: #fff7e6;
+  border: 1px solid #ffab00;
+  border-radius: 6px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+.human-input-panel h3 {
+  margin-top: 0;
+  color: #974f0c;
+}
+
+.human-input-panel .form-grid {
+  max-width: none;
+  margin-bottom: 8px;
+}
+
+.human-input-panel label {
+  font-size: 13px;
+}
+
 .screenshot-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

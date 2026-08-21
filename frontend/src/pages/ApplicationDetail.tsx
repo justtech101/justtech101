@@ -2,7 +2,17 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError, storageUrl } from "../api/client";
 import StatusBadge from "../components/StatusBadge";
-import type { Application, DocType, DraftResponse, FieldMapping, FillResponse, Opportunity, Profile, Screenshot } from "../types";
+import type {
+  Application,
+  DocType,
+  DraftResponse,
+  FieldMapping,
+  FillResponse,
+  Opportunity,
+  PendingField,
+  Profile,
+  Screenshot,
+} from "../types";
 
 const STATUS_OPTIONS = ["new", "qualified", "missing_info", "ready_for_review", "submitted", "rejected", "follow_up"];
 const CONFIRMATION_PHRASE = "I confirm I have manually submitted this application";
@@ -32,6 +42,10 @@ export default function ApplicationDetail() {
   const [fieldMap, setFieldMap] = useState<FieldMapping[]>([emptyFieldRow()]);
   const [fillResult, setFillResult] = useState<FillResponse | null>(null);
   const [fillBusy, setFillBusy] = useState(false);
+  // Live-only values for whatever's currently paused (password/attestation/
+  // etc.) -- typed here, sent once, never stored. Cleared right after use.
+  const [humanInputDrafts, setHumanInputDrafts] = useState<Record<string, string>>({});
+  const [resumeBusy, setResumeBusy] = useState(false);
 
   const [confirmedBy, setConfirmedBy] = useState("");
   const [confirmChecked, setConfirmChecked] = useState(false);
@@ -106,6 +120,7 @@ export default function ApplicationDetail() {
     setFillBusy(true);
     try {
       setError(null);
+      setHumanInputDrafts({});
       const usableRows = fieldMap.filter((r) => r.selector.trim() && r.label.trim() && r.value_source.trim());
       const result = await api.fillApplication(id, usableRows, true);
       setFillResult(result);
@@ -117,6 +132,36 @@ export default function ApplicationDetail() {
     } finally {
       setFillBusy(false);
     }
+  }
+
+  // Sends whatever's currently typed for the paused fields, right now, to
+  // fill exactly those fields on the still-open browser page. Nothing here
+  // is stored -- humanInputDrafts is cleared the instant this succeeds.
+  async function handleResumeFill() {
+    if (!id || !fillResult) return;
+    const inputs = fillResult.pending_fields
+      .filter((f) => (humanInputDrafts[f.selector] ?? "").length > 0)
+      .map((f) => ({ selector: f.selector, value: humanInputDrafts[f.selector] }));
+    if (inputs.length === 0) return;
+
+    setResumeBusy(true);
+    try {
+      setError(null);
+      const result = await api.resumeFill(id, inputs);
+      setFillResult(result);
+      setHumanInputDrafts({});
+      const shots = await api.listScreenshots(id);
+      setScreenshots(shots);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? `${err.status}: ${err.message}` : "Failed to submit the live value(s).");
+    } finally {
+      setResumeBusy(false);
+    }
+  }
+
+  function isPasswordLikeField(field: PendingField): boolean {
+    return /password|ssn|social security|account number|routing number/i.test(field.label);
   }
 
   async function handleConfirmSubmitted() {
@@ -353,6 +398,44 @@ export default function ApplicationDetail() {
                 </p>
               )}
               {fillResult.missing_fields.length > 0 && <p>No value found for: {fillResult.missing_fields.join(", ")}</p>}
+            </div>
+          )}
+
+          {fillResult?.status === "awaiting_human_input" && fillResult.pending_fields.length > 0 && (
+            <div className="human-input-panel">
+              <h3>🔒 Live input needed — nothing here is stored</h3>
+              <p className="muted">
+                These fields were never auto-filled (see the screenshots below for exactly where things stand). Type or check
+                a value here and it's used once, immediately, to fill that field on the page that's still open — it's
+                discarded right after, never saved to a profile or reused later.
+              </p>
+              {fillResult.pending_fields.map((f) => (
+                <div className="form-grid" key={f.selector}>
+                  <label>
+                    {f.label} <span className="muted">({f.selector})</span>
+                    {f.field_type === "check" ? (
+                      <select
+                        value={humanInputDrafts[f.selector] ?? ""}
+                        onChange={(e) => setHumanInputDrafts((d) => ({ ...d, [f.selector]: e.target.value }))}
+                      >
+                        <option value="">— choose —</option>
+                        <option value="true">Check it (yes)</option>
+                        <option value="false">Leave unchecked (no)</option>
+                      </select>
+                    ) : (
+                      <input
+                        type={isPasswordLikeField(f) ? "password" : "text"}
+                        value={humanInputDrafts[f.selector] ?? ""}
+                        onChange={(e) => setHumanInputDrafts((d) => ({ ...d, [f.selector]: e.target.value }))}
+                        autoComplete="off"
+                      />
+                    )}
+                  </label>
+                </div>
+              ))}
+              <button type="button" onClick={handleResumeFill} disabled={resumeBusy}>
+                {resumeBusy ? "Continuing…" : "Continue securely"}
+              </button>
             </div>
           )}
 

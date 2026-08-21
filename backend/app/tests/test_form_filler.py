@@ -1,4 +1,4 @@
-from app.automation.form_filler import _STOP_PATTERN, resolve_value
+from app.automation.form_filler import _HARD_STOP_PATTERN, _STOP_PATTERN, resolve_value
 from app.models.profile import ApplicantProfile
 
 
@@ -7,13 +7,25 @@ def test_stop_pattern_matches_attestation_language():
     assert _STOP_PATTERN.search("Signature")
     assert _STOP_PATTERN.search("Social Security Number")
     assert _STOP_PATTERN.search("I agree to the Terms and Conditions")
-    assert _STOP_PATTERN.search("Please complete the CAPTCHA below")
+    assert _STOP_PATTERN.search("Password")
 
 
 def test_stop_pattern_does_not_match_normal_fields():
     assert not _STOP_PATTERN.search("First name")
     assert not _STOP_PATTERN.search("Email address")
     assert not _STOP_PATTERN.search("Years of experience")
+
+
+def test_hard_stop_pattern_matches_captcha_only():
+    assert _HARD_STOP_PATTERN.search("Please complete the CAPTCHA below")
+    assert not _HARD_STOP_PATTERN.search("Signature")
+    assert not _HARD_STOP_PATTERN.search("Password")
+
+
+def test_captcha_fields_are_never_resumable():
+    # CAPTCHA must never appear as a resumable stop -- there is no live
+    # value handoff for an interactive visual challenge.
+    assert not _STOP_PATTERN.search("Please complete the CAPTCHA below")
 
 
 def test_resolve_value_from_profile_path():

@@ -64,9 +64,10 @@ justtech101/
 │       │   └── ingestion/         # base.py, rss_ingestor.py, api_ingestor.py
 │       │                          # (Grants.gov + RemoteOK), email_ingestor.py, runner.py
 │       ├── automation/
-│       │   ├── browser_manager.py # Playwright wrapper, CAPTCHA detection, dry-run request blocking
-│       │   └── form_filler.py     # orchestration, STOP_FIELD_PATTERNS, screenshots
-│       └── tests/                 # pytest unit tests (scoring, dedup, extraction, form_filler)
+│       │   ├── browser_manager.py  # Playwright wrapper, CAPTCHA detection, dry-run request blocking
+│       │   ├── form_filler.py      # orchestration, STOP_FIELD_PATTERNS, pause/resume, screenshots
+│       │   └── session_registry.py # holds a paused browser open between /fill and /resume-fill
+│       └── tests/                 # pytest unit tests (scoring, dedup, extraction, form_filler, resume_fill, session_registry)
 ├── frontend/
 │   ├── package.json / vite.config.ts / tsconfig.json
 │   ├── Dockerfile
@@ -252,9 +253,18 @@ curl -X POST http://localhost:8000/api/applications/<APPLICATION_ID>/draft -H "C
 curl -X POST http://localhost:8000/api/applications/<APPLICATION_ID>/approve -H "Content-Type: application/json" -d \
   '{"approved_by":"jane"}'
 
-# 5. Playwright fills the form (dry-run by default) -- stops before attestations, CAPTCHAs, and submit
+# 5. Playwright fills the form (dry-run by default) -- pauses before attestations, passwords, and other
+#    sensitive fields instead of guessing or auto-filling them
 curl -X POST http://localhost:8000/api/applications/<APPLICATION_ID>/fill -H "Content-Type: application/json" -d \
-  '{"field_map":[{"selector":"#email","label":"Email address","field_type":"fill","value_source":"profile.email"}]}'
+  '{"field_map":[
+     {"selector":"#email","label":"Email address","field_type":"fill","value_source":"profile.email"},
+     {"selector":"#password","label":"Account Password","field_type":"fill","value_source":"n/a"}
+   ]}'
+# -> if the response is {"status":"awaiting_human_input","pending_fields":[{"selector":"#password",...}],...},
+#    the browser is still open exactly there. A human supplies the live value in the next call --
+#    it's used once and never stored:
+curl -X POST http://localhost:8000/api/applications/<APPLICATION_ID>/resume-fill -H "Content-Type: application/json" -d \
+  '{"human_inputs":[{"selector":"#password","value":"<typed live, this request only>"}]}'
 
 # 6. Only a human clicks submit on the real site, then confirms it here (exact phrase required)
 curl -X POST http://localhost:8000/api/applications/<APPLICATION_ID>/confirm-submitted -H "Content-Type: application/json" -d \
@@ -283,10 +293,25 @@ follow the manual-setup notes embedded in each workflow's node comments.
   `application.human_approved is True`.
 - `STOP_FIELD_PATTERNS` in the same file skips any field whose label
   matches attestation/signature/SSN/CAPTCHA/terms-and-conditions/banking
-  patterns — those are never auto-filled.
-- `app/automation/browser_manager.py` raises `CaptchaEncounteredError` the
-  moment a CAPTCHA widget selector is detected; no code path attempts to
-  solve one.
+  patterns — those are never resolved from stored profile/answer/document
+  data, regardless of what `value_source` a field_map entry claims.
+- Most of those paused fields *can* be completed through
+  `POST /api/applications/{id}/resume-fill`, but only with a value a human
+  supplies in that exact request — the browser stays open right where it
+  stopped so nothing else has to be redone. The value is used once, is
+  never written to the database, and the endpoint rejects any selector that
+  wasn't already vetted as paused by the preceding `/fill` call (see
+  `app/automation/session_registry.py` for the paused-session handoff, and
+  `app/tests/test_resume_fill.py` for the tests proving `value_source` is
+  never consulted on this path). This is how a caller like an automation
+  agent gets a live credential or attestation into a form without ever
+  storing or auto-replaying it.
+- `HARD_STOP_PATTERNS` (CAPTCHA-labeled fields) is a stricter, separate list
+  with no resume path at all — solving a CAPTCHA is an interactive visual
+  challenge that can't be satisfied by passing a typed value through an API
+  call, so this tool never offers to. `app/automation/browser_manager.py`
+  also raises `CaptchaEncounteredError` the moment a CAPTCHA widget selector
+  is detected in the DOM; no code path attempts to solve one either way.
 - No code path ever clicks a submit button. `POST
   /api/applications/{id}/confirm-submitted` only records that a human
   clicked submit themselves, and requires a literal confirmation phrase.

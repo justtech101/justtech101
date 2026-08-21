@@ -180,13 +180,25 @@ export interface FieldMapping {
   value_source: string;
 }
 
+export interface PendingField {
+  selector: string;
+  label: string;
+  field_type: FieldType;
+}
+
 export interface FillResponse {
-  status: "awaiting_human_review" | "stopped_captcha" | "error";
+  status: "awaiting_human_review" | "awaiting_human_input" | "stopped_captcha" | "error";
   filled_fields: string[];
   missing_fields: string[];
   stopped_fields: string[];
   screenshots: string[];
   error: string | null;
+  pending_fields: PendingField[];
+}
+
+export interface HumanInput {
+  selector: string;
+  value: string;
 }
 
 export type IngestionSourceType = "rss" | "email" | "api" | "website" | "n8n_webhook";
