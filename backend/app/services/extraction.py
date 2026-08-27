@@ -39,6 +39,42 @@ REQUIRED_DOC_KEYWORDS = {
 
 QUESTION_LINE_PATTERN = re.compile(r"^\s*(?:\d+[\).]|\-|\*|Q[:\.])\s*(.+\?)\s*$", re.MULTILINE)
 
+# Ordered: more specific phrases first so "contract-to-hire" wins over "contract".
+EMPLOYMENT_TYPE_PATTERNS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r"\bcontract[\s\-]?to[\s\-]?hire\b|\bc2h\b", re.IGNORECASE), "contract-to-hire"),
+    (re.compile(r"\bfree[\s\-]?lanc(?:e|er)\b", re.IGNORECASE), "freelance"),
+    (re.compile(r"\b(?:independent\s+)?contractor?\b|\bcontract\b", re.IGNORECASE), "contract"),
+    (re.compile(r"\btemp(?:orary)?\b", re.IGNORECASE), "temp"),
+    (re.compile(r"\bhourly\b", re.IGNORECASE), "hourly"),
+    (re.compile(r"\bgig\b", re.IGNORECASE), "gig"),
+]
+
+
+def extract_employment_type(text: str, tags: list[str] | None = None) -> str | None:
+    """Detect contract/temp/freelance-style roles from tags or posting text.
+    Returns a normalized label or None when nothing explicit is present."""
+    for tag in tags or []:
+        normalized = str(tag).strip().lower().replace("_", "-").replace(" ", "-")
+        if normalized in {"c2h", "contract-to-hire", "contracttohire"}:
+            return "contract-to-hire"
+        if normalized in {"freelance", "freelancer"}:
+            return "freelance"
+        if normalized in {"contract", "contractor"}:
+            return "contract"
+        if normalized in {"temp", "temporary"}:
+            return "temp"
+        if normalized == "hourly":
+            return "hourly"
+        if normalized == "gig":
+            return "gig"
+
+    if not text:
+        return None
+    for pattern, label in EMPLOYMENT_TYPE_PATTERNS:
+        if pattern.search(text):
+            return label
+    return None
+
 
 def extract_deadline(text: str) -> datetime | None:
     if not text:

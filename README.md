@@ -6,6 +6,7 @@ pipeline, and uses Playwright to fill (never submit) application forms —
 always with a human approving before anything goes out.
 
 Full design doc: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Quick-income playbook: [`docs/QUICK_INCOME.md`](docs/QUICK_INCOME.md).
 Database schema: [`backend/migrations/001_init.sql`](backend/migrations/001_init.sql).
 
 ## 1. System architecture
@@ -37,7 +38,8 @@ justtech101/
 ├── docker-compose.yml            # postgres + backend + frontend, local dev
 ├── .env.example                  # every env var, REQUIRED/OPTIONAL marked
 ├── docs/
-│   └── ARCHITECTURE.md
+│   ├── ARCHITECTURE.md
+│   └── QUICK_INCOME.md           # same-week cash tactics + fast-pay profile prefs
 ├── backend/
 │   ├── requirements.txt / requirements-dev.txt
 │   ├── Dockerfile
@@ -56,8 +58,8 @@ justtech101/
 │       │                          # automation, dashboard, webhooks, credentials, audit, ingestion_sources
 │       ├── services/
 │       │   ├── dedup.py           # exact-hash + fuzzy duplicate detection
-│       │   ├── scoring.py         # rule-based 0-100 scorer
-│       │   ├── extraction.py      # deadline/salary/docs/questions from raw text
+│       │   ├── scoring.py         # rule-based 0-100 scorer (pay + speed-to-cash biased)
+│       │   ├── extraction.py      # deadline/salary/docs/questions/employment_type from raw text
 │       │   ├── drafting.py        # resume/cover-letter/grant-narrative templates
 │       │   ├── audit.py           # audit_log writer
 │       │   ├── notifications.py   # outbound n8n webhook

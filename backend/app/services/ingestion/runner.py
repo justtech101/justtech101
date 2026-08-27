@@ -83,10 +83,18 @@ async def ingest_opportunity(db: AsyncSession, item: OpportunityIngest) -> tuple
     if item.type == "grant" and award_amount is None:
         award_amount = extraction.extract_award_amount(item.description or "")
 
+    eligibility = dict(item.eligibility or {})
+    if item.type == "job" and "employment_type" not in eligibility:
+        employment_type = extraction.extract_employment_type(
+            "\n".join(filter(None, [item.title, item.description or ""]))
+        )
+        if employment_type:
+            eligibility["employment_type"] = employment_type
+
     salary_or_award = salary_min or salary_max or award_amount
     missing_fields = extraction.compute_missing_fields(
         deadline=deadline,
-        eligibility=item.eligibility,
+        eligibility=eligibility,
         required_documents=required_documents,
         salary_or_award=salary_or_award,
         description=item.description,
@@ -105,7 +113,7 @@ async def ingest_opportunity(db: AsyncSession, item: OpportunityIngest) -> tuple
         location=item.location,
         remote=item.remote,
         deadline=deadline,
-        eligibility=item.eligibility,
+        eligibility=eligibility,
         salary_min=salary_min,
         salary_max=salary_max,
         salary_currency=item.salary_currency,
