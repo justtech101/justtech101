@@ -43,3 +43,14 @@ def test_compute_missing_fields_flags_everything_absent():
         deadline=None, eligibility={}, required_documents=[], salary_or_award=None, description=None
     )
     assert set(missing) == {"deadline", "eligibility", "required_documents", "compensation_or_award_amount", "description"}
+
+
+def test_extract_employment_type_from_tags():
+    assert extraction.extract_employment_type("", tags=["contract"]) == "contract"
+    assert extraction.extract_employment_type("", tags=["freelance"]) == "freelance"
+
+
+def test_extract_employment_type_from_text():
+    assert extraction.extract_employment_type("Looking for a freelance React developer") == "freelance"
+    assert extraction.extract_employment_type("6-month contract-to-hire role") == "contract-to-hire"
+    assert extraction.extract_employment_type("Full-time permanent role with benefits") is None

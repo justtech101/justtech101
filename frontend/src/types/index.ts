@@ -19,6 +19,13 @@ export interface BoardCard {
   missing_fields: string[];
   source: string;
   status: string;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salary_currency?: string;
+  award_amount?: number | null;
+  employment_type?: string | null;
+  fast_pay_signals?: string[];
+  remote?: boolean | null;
   application_id?: string;
   application_status?: string;
   dry_run?: boolean;
@@ -93,6 +100,7 @@ export interface ScoreBreakdown {
   eligibility_match?: ScoreComponent;
   deadline_urgency?: ScoreComponent;
   compensation_fit?: ScoreComponent;
+  speed_to_cash?: ScoreComponent;
   data_completeness?: ScoreComponent;
   [key: string]: unknown;
 }

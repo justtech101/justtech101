@@ -96,6 +96,7 @@ export default function Opportunities() {
             <th>Title</th>
             <th>Organization</th>
             <th>Type</th>
+            <th>Pay</th>
             <th>Score</th>
             <th>Status</th>
             <th>Deadline</th>
@@ -103,26 +104,47 @@ export default function Opportunities() {
           </tr>
         </thead>
         <tbody>
-          {opportunities.map((o) => (
-            <tr key={o.id}>
-              <td>
-                <Link to={`/opportunities/${o.id}`}>{o.title}</Link>
-              </td>
-              <td>{o.organization ?? "—"}</td>
-              <td>{o.type}</td>
-              <td>
-                <ScoreBadge score={o.score} />
-              </td>
-              <td>
-                <StatusBadge status={o.status} />
-              </td>
-              <td>{o.deadline ? new Date(o.deadline).toLocaleDateString() : "—"}</td>
-              <td className="muted">{o.source}</td>
-            </tr>
-          ))}
+          {opportunities.map((o) => {
+            const pay =
+              o.type === "grant"
+                ? o.award_amount
+                : o.salary_max ?? o.salary_min;
+            const payLabel =
+              pay == null
+                ? "—"
+                : new Intl.NumberFormat(undefined, {
+                    style: "currency",
+                    currency: o.salary_currency || "USD",
+                    maximumFractionDigits: 0,
+                  }).format(pay);
+            const emp = o.eligibility?.employment_type;
+            return (
+              <tr key={o.id}>
+                <td>
+                  <Link to={`/opportunities/${o.id}`}>{o.title}</Link>
+                  {typeof emp === "string" && (
+                    <span className="fast-pay-tag" style={{ marginLeft: 8 }}>
+                      {emp}
+                    </span>
+                  )}
+                </td>
+                <td>{o.organization ?? "—"}</td>
+                <td>{o.type}</td>
+                <td>{payLabel}</td>
+                <td>
+                  <ScoreBadge score={o.score} />
+                </td>
+                <td>
+                  <StatusBadge status={o.status} />
+                </td>
+                <td>{o.deadline ? new Date(o.deadline).toLocaleDateString() : "—"}</td>
+                <td className="muted">{o.source}</td>
+              </tr>
+            );
+          })}
           {opportunities.length === 0 && !loading && (
             <tr>
-              <td colSpan={7} className="muted">
+              <td colSpan={8} className="muted">
                 No opportunities match these filters yet.
               </td>
             </tr>

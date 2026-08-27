@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.application import Application
 from app.models.opportunity import Opportunity
+from app.services.scoring import CONTRACT_EMPLOYMENT_TYPES
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -66,7 +67,33 @@ async def dashboard_board(profile_id: uuid.UUID | None = None, db: AsyncSession 
         card["submitted_at"] = application.submitted_at.isoformat() if application.submitted_at else None
         board[application.status].append(card)
 
+    for bucket, cards in board.items():
+        board[bucket] = sorted(cards, key=_fast_pay_sort_key)
+
     return board
+
+
+def _pay_amount(opp: Opportunity) -> float | None:
+    if opp.type == "job":
+        value = opp.salary_max or opp.salary_min
+    else:
+        value = opp.award_amount
+    return float(value) if value is not None else None
+
+
+def _fast_pay_signals(opp: Opportunity) -> list[str]:
+    signals: list[str] = []
+    eligibility = opp.eligibility or {}
+    emp = eligibility.get("employment_type")
+    if emp and str(emp).lower() in CONTRACT_EMPLOYMENT_TYPES:
+        signals.append(str(emp).lower())
+    docs = opp.required_documents or []
+    questions = opp.application_questions or []
+    if len(docs) <= 1 and len(questions) <= 1:
+        signals.append("fast apply")
+    if opp.remote is True:
+        signals.append("remote")
+    return signals
 
 
 def _opportunity_card(opp: Opportunity) -> dict[str, Any]:
@@ -80,4 +107,18 @@ def _opportunity_card(opp: Opportunity) -> dict[str, Any]:
         "missing_fields": opp.missing_fields,
         "source": opp.source,
         "status": opp.status,
+        "salary_min": float(opp.salary_min) if opp.salary_min is not None else None,
+        "salary_max": float(opp.salary_max) if opp.salary_max is not None else None,
+        "salary_currency": opp.salary_currency or "USD",
+        "award_amount": float(opp.award_amount) if opp.award_amount is not None else None,
+        "employment_type": (opp.eligibility or {}).get("employment_type"),
+        "fast_pay_signals": _fast_pay_signals(opp),
+        "remote": opp.remote,
     }
+
+
+def _fast_pay_sort_key(card: dict[str, Any]) -> tuple:
+    """Highest score first, then highest stated pay — favors quick-income chase."""
+    score = card.get("score")
+    pay = card.get("salary_max") or card.get("salary_min") or card.get("award_amount") or 0
+    return (-(score if score is not None else -1), -float(pay))

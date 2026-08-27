@@ -98,7 +98,9 @@
    reposts across sources.
 4. **Scoring** — `services/scoring.py` produces a 0–100 score from
    eligibility fit, keyword/skill match against the active profile, deadline
-   urgency, and completeness, with a transparent `score_breakdown`.
+   urgency, compensation vs profile floor (with upside for above-floor pay),
+   speed-to-cash (lean applications, contract/temp tags, remote), and
+   completeness, with a transparent `score_breakdown`.
 5. **Profile matching / missing info** — the applicant's stored profile and
    verified reusable answers are checked against `application_questions`;
    anything unanswered moves the opportunity to **Missing Information**.

@@ -3,6 +3,9 @@ Rule-based 0-100 scoring engine. Deliberately not an LLM call: scores must be
 explainable and reproducible, so every point awarded is traceable in
 `score_breakdown`. Weights sum to 100 and can be tuned per-deployment via the
 WEIGHTS dict below.
+
+Fast-pay bias: compensation above the profile floor and lean/contract-style
+postings earn more points so urgent income seekers see cash-relevant roles first.
 """
 from datetime import datetime, timezone
 from typing import Any
@@ -11,11 +14,25 @@ from app.models.opportunity import Opportunity
 from app.models.profile import ApplicantProfile
 
 WEIGHTS = {
-    "skill_match": 35,
-    "eligibility_match": 25,
-    "deadline_urgency": 15,
-    "compensation_fit": 15,
-    "data_completeness": 10,
+    "skill_match": 30,
+    "eligibility_match": 20,
+    "deadline_urgency": 12,
+    "compensation_fit": 22,
+    "speed_to_cash": 10,
+    "data_completeness": 6,
+}
+
+CONTRACT_EMPLOYMENT_TYPES = {
+    "contract",
+    "contractor",
+    "temp",
+    "temporary",
+    "freelance",
+    "freelancer",
+    "hourly",
+    "gig",
+    "contract-to-hire",
+    "c2h",
 }
 
 
@@ -32,16 +49,15 @@ def _score_skill_match(opportunity: Opportunity, profile: ApplicantProfile) -> t
         filter(None, [opportunity.title, opportunity.description, opportunity.organization])
     ).lower()
     matched = {skill for skill in profile_skills if skill in haystack}
-    if not profile_skills:
-        ratio = 0.0
-    else:
-        ratio = len(matched) / len(profile_skills)
+    ratio = len(matched) / len(profile_skills)
     detail = f"matched {len(matched)}/{len(profile_skills)} profile skills in posting text: {sorted(matched) or 'none'}"
     return ratio, detail
 
 
 def _score_eligibility_match(opportunity: Opportunity, profile: ApplicantProfile) -> tuple[float, str]:
     required = opportunity.eligibility or {}
+    # employment_type is a soft signal for speed_to_cash, not a hard gate
+    required = {k: v for k, v in required.items() if k != "employment_type"}
     if not required:
         return 1.0, "no eligibility requirements stated by source"
 
@@ -98,6 +114,7 @@ def _score_deadline_urgency(opportunity: Opportunity) -> tuple[float, str]:
 
 
 def _score_compensation_fit(opportunity: Opportunity, profile: ApplicantProfile) -> tuple[float, str]:
+    """Reward pay that clears the floor, and reward pay that clears it by a lot."""
     preferences = profile.preferences or {}
     min_expected = preferences.get("min_salary") if opportunity.type == "job" else preferences.get("min_award")
 
@@ -107,9 +124,78 @@ def _score_compensation_fit(opportunity: Opportunity, profile: ApplicantProfile)
     if min_expected is None:
         return 0.75, f"posting states {value}; no profile minimum set to compare against"
 
-    if float(value) >= float(min_expected):
-        return 1.0, f"{value} meets or exceeds profile minimum of {min_expected}"
-    return 0.2, f"{value} is below profile minimum of {min_expected}"
+    value_f = float(value)
+    min_f = float(min_expected)
+    if value_f < min_f:
+        return 0.2, f"{value} is below profile minimum of {min_expected}"
+
+    ratio_to_min = value_f / min_f if min_f else 1.0
+    if ratio_to_min >= 1.5:
+        return 1.0, f"{value} is {ratio_to_min:.2f}x profile minimum of {min_expected} -- strong pay"
+    if ratio_to_min >= 1.25:
+        return 0.9, f"{value} is {ratio_to_min:.2f}x profile minimum of {min_expected}"
+    if ratio_to_min >= 1.1:
+        return 0.8, f"{value} modestly exceeds profile minimum of {min_expected}"
+    return 0.7, f"{value} meets profile minimum of {min_expected}"
+
+
+def _employment_type(opportunity: Opportunity) -> str | None:
+    eligibility = opportunity.eligibility or {}
+    raw = eligibility.get("employment_type")
+    if raw is None:
+        return None
+    if isinstance(raw, (list, tuple)):
+        return str(raw[0]).strip().lower() if raw else None
+    return str(raw).strip().lower() or None
+
+
+def _score_speed_to_cash(opportunity: Opportunity, profile: ApplicantProfile) -> tuple[float, str]:
+    """Lean applications + contract/temp tags = faster path to a paycheck."""
+    docs = opportunity.required_documents or []
+    questions = opportunity.application_questions or []
+    doc_count = len(docs)
+    question_count = len(questions)
+
+    if doc_count <= 1 and question_count <= 1:
+        lean_ratio = 1.0
+        lean_detail = "lean application (≤1 doc, ≤1 question)"
+    elif doc_count <= 2 and question_count <= 3:
+        lean_ratio = 0.75
+        lean_detail = "moderately lean application"
+    elif doc_count <= 4 and question_count <= 6:
+        lean_ratio = 0.45
+        lean_detail = "average application burden"
+    else:
+        lean_ratio = 0.2
+        lean_detail = "heavy application packet -- slower to cash"
+
+    emp = _employment_type(opportunity)
+    preferences = profile.preferences or {}
+    prefer_contract = bool(preferences.get("prefer_contract"))
+
+    if emp and emp in CONTRACT_EMPLOYMENT_TYPES:
+        contract_ratio = 1.0 if prefer_contract else 0.85
+        contract_detail = f"employment_type={emp} (faster-pay style)"
+    elif emp:
+        contract_ratio = 0.55
+        contract_detail = f"employment_type={emp}"
+    else:
+        contract_ratio = 0.55
+        contract_detail = "no employment_type tagged"
+
+    remote_ratio = 0.7
+    remote_detail = "on-site / unknown"
+    if opportunity.remote is True:
+        remote_ratio = 0.9
+        remote_detail = "remote -- fewer start-date blockers"
+    elif opportunity.remote is False:
+        remote_ratio = 0.45
+        remote_detail = "on-site"
+
+    # Weighted blend inside the speed factor
+    ratio = lean_ratio * 0.5 + contract_ratio * 0.35 + remote_ratio * 0.15
+    detail = f"{lean_detail}; {contract_detail}; {remote_detail}"
+    return ratio, detail
 
 
 def _score_data_completeness(opportunity: Opportunity) -> tuple[float, str]:
@@ -133,6 +219,7 @@ def score_opportunity(opportunity: Opportunity, profile: ApplicantProfile) -> tu
         "eligibility_match": _score_eligibility_match(opportunity, profile),
         "deadline_urgency": _score_deadline_urgency(opportunity),
         "compensation_fit": _score_compensation_fit(opportunity, profile),
+        "speed_to_cash": _score_speed_to_cash(opportunity, profile),
         "data_completeness": _score_data_completeness(opportunity),
     }
 

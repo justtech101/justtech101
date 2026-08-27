@@ -135,16 +135,28 @@ class RemoteOKIngestor(Ingestor):
         if salary_min is None and salary_max is None:
             salary_min, salary_max = extraction.extract_salary_range(description)
 
+        tags = item.get("tags") or []
+        if not isinstance(tags, list):
+            tags = [tags]
+        title = (item.get("position") or "").strip()
+        employment_type = extraction.extract_employment_type(
+            f"{title}\n{description}", tags=[str(t) for t in tags]
+        )
+        eligibility: dict = {}
+        if employment_type:
+            eligibility["employment_type"] = employment_type
+
         return OpportunityIngest(
             type="job",
             source="api:remoteok",
             source_url=item.get("url"),
             external_id=str(item.get("id")),
-            title=(item.get("position") or "").strip(),
+            title=title,
             organization=item.get("company"),
             description=description,
             location=item.get("location") or "Remote",
             remote=True,
+            eligibility=eligibility,
             salary_min=salary_min,
             salary_max=salary_max,
             required_documents=extraction.extract_required_documents(description),
