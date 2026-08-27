@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import IngestionSources from "./pages/IngestionSources";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import Opportunities from "./pages/Opportunities";
+import Pricing from "./pages/Pricing";
 import ProfileDetail from "./pages/ProfileDetail";
 import Profiles from "./pages/Profiles";
 
@@ -18,6 +19,7 @@ const NAV_LINKS = [
   { to: "/sources", label: "Sources" },
   { to: "/credentials", label: "Credentials" },
   { to: "/audit", label: "Audit Log" },
+  { to: "/pricing", label: "Pricing" },
 ];
 
 export default function App() {
@@ -45,6 +47,7 @@ export default function App() {
           <Route path="/sources" element={<IngestionSources />} />
           <Route path="/credentials" element={<Credentials />} />
           <Route path="/audit" element={<AuditLog />} />
+          <Route path="/pricing" element={<Pricing />} />
         </Routes>
       </div>
     </HashRouter>

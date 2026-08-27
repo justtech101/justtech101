@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.database import AsyncSessionLocal
-from app.routers import applications, audit, automation, credentials, dashboard, drafting, ingestion_sources, opportunities, profiles, webhooks
+from app.routers import applications, audit, automation, billing, credentials, dashboard, drafting, ingestion_sources, opportunities, profiles, webhooks
 from app.services.ingestion.runner import run_all_enabled
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -38,6 +38,7 @@ app.include_router(applications.router)
 app.include_router(automation.router)
 app.include_router(drafting.router)
 app.include_router(dashboard.router)
+app.include_router(billing.router)
 app.include_router(webhooks.router)
 app.include_router(credentials.router)
 app.include_router(audit.router)

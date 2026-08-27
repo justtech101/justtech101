@@ -14,8 +14,13 @@ from app.models.application import Application, Screenshot
 from app.models.opportunity import Opportunity
 from app.models.profile import ApplicantProfile
 from app.services.audit import record_event
+from app.services.license import require_pro
 
 router = APIRouter(prefix="/api/applications", tags=["automation"])
+
+
+async def _require_automation_pro(db: AsyncSession = Depends(get_db)):
+    return await require_pro("automation", db)
 
 
 class FieldMappingIn(BaseModel):
@@ -70,7 +75,12 @@ def _to_pending_out(f: FieldMapping) -> PendingFieldOut:
 
 
 @router.post("/{application_id}/fill", response_model=FillResponse)
-async def fill_application_form(application_id: uuid.UUID, payload: FillRequest, db: AsyncSession = Depends(get_db)):
+async def fill_application_form(
+    application_id: uuid.UUID,
+    payload: FillRequest,
+    db: AsyncSession = Depends(get_db),
+    _pro=Depends(_require_automation_pro),
+):
     settings = get_settings()
     if not settings.ENABLE_LOCAL_BROWSER_WORKER:
         raise HTTPException(
@@ -152,7 +162,12 @@ async def fill_application_form(application_id: uuid.UUID, payload: FillRequest,
 
 
 @router.post("/{application_id}/resume-fill", response_model=FillResponse)
-async def resume_fill(application_id: uuid.UUID, payload: ResumeFillRequest, db: AsyncSession = Depends(get_db)):
+async def resume_fill(
+    application_id: uuid.UUID,
+    payload: ResumeFillRequest,
+    db: AsyncSession = Depends(get_db),
+    _pro=Depends(_require_automation_pro),
+):
     """Completes exactly the paused fields a human is supplying a live value
     for right now (a password, an attestation checkbox, a typed signature,
     an SSN, etc.). This is the fast path for the human-review checkpoint

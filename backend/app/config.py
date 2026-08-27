@@ -37,6 +37,24 @@ class Settings(BaseSettings):
     # makes stored credentials unrecoverable by design.
     JUSTTECH_ENCRYPTION_KEY: str = ""
 
+    # --- Billing / JustTech Pro ----------------------------------------------
+    # When true, drafting + browser fill require an active Pro entitlement.
+    # Keep false for pure OSS self-host; set true on paid/hosted installs you sell.
+    JUSTTECH_REQUIRE_PRO: bool = False
+    # Stripe (https://dashboard.stripe.com/apikeys). Required to take payments.
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_PRICE_PRO_MONTHLY: str = ""       # price_... for Pro subscription
+    STRIPE_PRICE_HOSTED_SETUP: str = ""      # price_... for one-time founding setup
+    BILLING_SUCCESS_URL: str = "http://localhost:5173/#/pricing?checkout=success"
+    BILLING_CANCEL_URL: str = "http://localhost:5173/#/pricing?checkout=canceled"
+    PRO_PRICE_DISPLAY: str = "$29/mo"
+    HOSTED_SETUP_PRICE_DISPLAY: str = "$499 one-time"
+    # HMAC secret used to mint/verify offline Pro license keys (seller keeps this).
+    JUSTTECH_LICENSE_SIGNING_SECRET: str = ""
+    # Protects POST /api/billing/mint-license (seller-only).
+    JUSTTECH_BILLING_ADMIN_SECRET: str = ""
+
     # --- App behavior -----------------------------------------------------
     ENVIRONMENT: str = "development"           # development | production
     CORS_ORIGINS: str = "http://localhost:5173"  # comma-separated list

@@ -13,6 +13,7 @@ from app.models.opportunity import Opportunity
 from app.models.profile import ApplicantProfile, ProfileDocument
 from app.services.audit import record_event
 from app.services.drafting import default_drafter
+from app.services.license import require_pro
 
 router = APIRouter(prefix="/api/applications", tags=["drafting"])
 
@@ -30,6 +31,10 @@ _APPLICATION_FIELD = {
 }
 
 
+async def _require_drafting_pro(db: AsyncSession = Depends(get_db)):
+    return await require_pro("drafting", db)
+
+
 class DraftRequest(BaseModel):
     doc_type: DocType
     persist: bool = True  # if true, saves as a profile_documents row and links it on the application
@@ -42,7 +47,12 @@ class DraftResponse(BaseModel):
 
 
 @router.post("/{application_id}/draft", response_model=DraftResponse)
-async def draft_document(application_id: uuid.UUID, payload: DraftRequest, db: AsyncSession = Depends(get_db)):
+async def draft_document(
+    application_id: uuid.UUID,
+    payload: DraftRequest,
+    db: AsyncSession = Depends(get_db),
+    _pro=Depends(_require_drafting_pro),
+):
     """Generates a resume summary / cover letter / grant narrative from
     VERIFIED profile data only (see app/services/drafting.py). Anything the
     profile is missing is returned in `missing_fields` rather than invented

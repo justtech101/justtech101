@@ -2,7 +2,9 @@ import type {
   Application,
   ApplicationStatus,
   AuditLogEntry,
+  BillingStatus,
   Board,
+  CheckoutSession,
   Credential,
   DocType,
   DraftResponse,
@@ -169,6 +171,19 @@ export const api = {
   // --- Audit log ----------------------------------------------------------
   listAuditLog: (params: { entity_type?: string; entity_id?: string; limit?: number } = {}) =>
     request<AuditLogEntry[]>(`/api/audit${query(params)}`),
+
+  // --- Billing / Pro -------------------------------------------------------
+  getBillingStatus: () => request<BillingStatus>("/api/billing/status"),
+  createCheckout: (product: "pro_monthly" | "hosted_setup", customerEmail?: string) =>
+    request<CheckoutSession>("/api/billing/checkout", {
+      method: "POST",
+      body: JSON.stringify({ product, customer_email: customerEmail }),
+    }),
+  activateLicense: (licenseKey: string) =>
+    request<BillingStatus>("/api/billing/activate-license", {
+      method: "POST",
+      body: JSON.stringify({ license_key: licenseKey }),
+    }),
 };
 
 export { ApiError };
