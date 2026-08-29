@@ -87,7 +87,11 @@ export default function ApplicationDetail() {
       setDraftResult(result);
       await refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? `${err.status}: ${err.message}` : "Failed to generate draft.");
+      if (err instanceof ApiError && err.status === 402) {
+        setError("JustTech Pro required for drafting. Upgrade under Pricing.");
+      } else {
+        setError(err instanceof ApiError ? `${err.status}: ${err.message}` : "Failed to generate draft.");
+      }
     } finally {
       setDraftBusy(false);
     }
@@ -128,7 +132,11 @@ export default function ApplicationDetail() {
       setScreenshots(shots);
       await refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? `${err.status}: ${err.message}` : "Failed to run form fill.");
+      if (err instanceof ApiError && err.status === 402) {
+        setError("JustTech Pro required for form fill. Upgrade under Pricing.");
+      } else {
+        setError(err instanceof ApiError ? `${err.status}: ${err.message}` : "Failed to run form fill.");
+      }
     } finally {
       setFillBusy(false);
     }
@@ -241,6 +249,11 @@ export default function ApplicationDetail() {
       </div>
       {notice && <p className="notice-text">{notice}</p>}
       {error && <p className="error-text">{error}</p>}
+      {error?.includes("Pro required") && (
+        <p>
+          <Link to="/pricing">Upgrade to JustTech Pro →</Link>
+        </p>
+      )}
       {application.missing_fields.length > 0 && (
         <div>
           {application.missing_fields.map((f) => (

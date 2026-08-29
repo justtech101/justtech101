@@ -567,3 +567,76 @@ button:hover {
   padding: 4px 6px;
   word-break: break-word;
 }
+
+/* ---- Pricing / Pro ----------------------------------------------------- */
+.pricing-page .pricing-brand {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: #0052cc;
+  margin: 0 0 8px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.pricing-tier {
+  background: #fff;
+  border: 1px solid #dfe1e6;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.pricing-tier-pro {
+  border-color: #0052cc;
+  box-shadow: 0 0 0 1px #0052cc;
+}
+
+.pricing-amount {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 4px 0 12px;
+}
+
+.pricing-tier ul {
+  padding-left: 18px;
+  margin: 0 0 16px;
+  color: #42526e;
+  font-size: 14px;
+}
+
+.pricing-email {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.pricing-email input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.primary-btn {
+  background: #0052cc;
+  color: #fff;
+  border-color: #0052cc;
+}
+
+.success-banner {
+  background: #e3fcef;
+  color: #216e4e;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.pricing-license {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #dfe1e6;
+}
+

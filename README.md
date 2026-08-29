@@ -6,6 +6,7 @@ pipeline, and uses Playwright to fill (never submit) application forms —
 always with a human approving before anything goes out.
 
 Full design doc: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+How to charge for Pro / hosted setup: [`docs/MONETIZATION.md`](docs/MONETIZATION.md).
 Database schema: [`backend/migrations/001_init.sql`](backend/migrations/001_init.sql).
 
 ## 1. System architecture
@@ -37,7 +38,11 @@ justtech101/
 ├── docker-compose.yml            # postgres + backend + frontend, local dev
 ├── .env.example                  # every env var, REQUIRED/OPTIONAL marked
 ├── docs/
-│   └── ARCHITECTURE.md
+│   ├── ARCHITECTURE.md
+│   ├── MONETIZATION.md           # Stripe Pro + hosted setup revenue path
+│   └── SELLER_KIT.md             # 60-min cash path + outreach copy
+├── scripts/
+│   └── mint_license.py           # mint JTPRO keys after Payment Link sales
 ├── backend/
 │   ├── requirements.txt / requirements-dev.txt
 │   ├── Dockerfile
