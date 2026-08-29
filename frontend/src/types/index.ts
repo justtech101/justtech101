@@ -240,6 +240,7 @@ export interface BillingProduct {
   price_display: string;
   description: string;
   price_id_configured: boolean;
+  payment_link?: string | null;
 }
 
 export interface BillingStatus {
@@ -250,6 +251,7 @@ export interface BillingStatus {
   pro_required: boolean;
   pro_features_unlocked: boolean;
   billing_configured: boolean;
+  has_stripe_customer?: boolean;
   features: {
     discovery: boolean;
     scoring: boolean;

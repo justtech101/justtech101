@@ -53,6 +53,10 @@ async def entitlement_snapshot(db: AsyncSession) -> dict[str, Any]:
     row = await get_or_create_entitlement(db)
     active = row.plan == "pro" and row.status == "active" and _is_unexpired(row.valid_until)
     enforced = settings.JUSTTECH_REQUIRE_PRO
+    checkout_pro = bool(settings.STRIPE_SECRET_KEY and settings.STRIPE_PRICE_PRO_MONTHLY)
+    checkout_hosted = bool(settings.STRIPE_SECRET_KEY and settings.STRIPE_PRICE_HOSTED_SETUP)
+    link_pro = settings.STRIPE_PAYMENT_LINK_PRO or None
+    link_hosted = settings.STRIPE_PAYMENT_LINK_HOSTED_SETUP or None
     return {
         "plan": row.plan if active else "free",
         "status": row.status,
@@ -60,7 +64,8 @@ async def entitlement_snapshot(db: AsyncSession) -> dict[str, Any]:
         "valid_until": row.valid_until.isoformat() if row.valid_until else None,
         "pro_required": enforced,
         "pro_features_unlocked": active or not enforced,
-        "billing_configured": bool(settings.STRIPE_SECRET_KEY and settings.STRIPE_PRICE_PRO_MONTHLY),
+        "billing_configured": checkout_pro or checkout_hosted or bool(link_pro or link_hosted),
+        "has_stripe_customer": bool(row.stripe_customer_id),
         "features": {
             "discovery": True,
             "scoring": True,
@@ -72,13 +77,15 @@ async def entitlement_snapshot(db: AsyncSession) -> dict[str, Any]:
                 "name": "JustTech Pro",
                 "price_display": settings.PRO_PRICE_DISPLAY,
                 "description": "Unlock application drafting and browser form-fill automation.",
-                "price_id_configured": bool(settings.STRIPE_PRICE_PRO_MONTHLY),
+                "price_id_configured": checkout_pro,
+                "payment_link": link_pro,
             },
             "hosted_setup": {
                 "name": "Founding Hosted Setup",
                 "price_display": settings.HOSTED_SETUP_PRICE_DISPLAY,
                 "description": "One-time done-for-you deploy on your machine or a VPS you own.",
-                "price_id_configured": bool(settings.STRIPE_PRICE_HOSTED_SETUP),
+                "price_id_configured": checkout_hosted,
+                "payment_link": link_hosted,
             },
         },
     }

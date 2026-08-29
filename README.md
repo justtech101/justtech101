@@ -39,7 +39,10 @@ justtech101/
 ├── .env.example                  # every env var, REQUIRED/OPTIONAL marked
 ├── docs/
 │   ├── ARCHITECTURE.md
-│   └── MONETIZATION.md           # Stripe Pro + hosted setup revenue path
+│   ├── MONETIZATION.md           # Stripe Pro + hosted setup revenue path
+│   └── SELLER_KIT.md             # 60-min cash path + outreach copy
+├── scripts/
+│   └── mint_license.py           # mint JTPRO keys after Payment Link sales
 ├── backend/
 │   ├── requirements.txt / requirements-dev.txt
 │   ├── Dockerfile

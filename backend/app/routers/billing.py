@@ -77,10 +77,37 @@ async def billing_status(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
 
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout(payload: CheckoutRequest, db: AsyncSession = Depends(get_db)) -> CheckoutResponse:
-    """Create a Stripe Checkout Session. This is how JustTech collects money."""
-    _configure_stripe()
+    """Create a Stripe Checkout Session, or redirect to a Payment Link fallback."""
     settings = get_settings()
-    price_id, mode = _price_for_product(payload.product)
+    link = (
+        settings.STRIPE_PAYMENT_LINK_PRO
+        if payload.product == "pro_monthly"
+        else settings.STRIPE_PAYMENT_LINK_HOSTED_SETUP
+    )
+
+    # Prefer API Checkout when Price IDs exist; otherwise open a Dashboard Payment Link.
+    try:
+        price_id, mode = _price_for_product(payload.product)
+    except HTTPException:
+        if link:
+            entitlement = await license_service.get_or_create_entitlement(db)
+            await record_event(
+                db,
+                entity_type="billing",
+                entity_id=entitlement.id,
+                event_type="payment_link_opened",
+                payload={"product": payload.product},
+                commit=True,
+            )
+            return CheckoutResponse(checkout_url=link, session_id="payment_link")
+        raise
+
+    try:
+        _configure_stripe()
+    except HTTPException:
+        if link:
+            return CheckoutResponse(checkout_url=link, session_id="payment_link")
+        raise
 
     success = payload.success_url or settings.BILLING_SUCCESS_URL
     cancel = payload.cancel_url or settings.BILLING_CANCEL_URL
@@ -102,6 +129,8 @@ async def create_checkout(payload: CheckoutRequest, db: AsyncSession = Depends(g
         session = stripe.checkout.Session.create(**session_params)
     except stripe.StripeError as exc:
         logger.exception("Stripe Checkout session creation failed")
+        if link:
+            return CheckoutResponse(checkout_url=link, session_id="payment_link_fallback")
         raise HTTPException(502, f"Stripe error: {exc.user_message or str(exc)}") from exc
 
     entitlement = await license_service.get_or_create_entitlement(db)
@@ -114,6 +143,24 @@ async def create_checkout(payload: CheckoutRequest, db: AsyncSession = Depends(g
         commit=True,
     )
     return CheckoutResponse(checkout_url=session.url, session_id=session.id)
+
+
+@router.post("/portal")
+async def create_portal(db: AsyncSession = Depends(get_db)) -> dict[str, str]:
+    """Stripe Customer Portal for Pro subscribers to manage/cancel billing."""
+    _configure_stripe()
+    settings = get_settings()
+    row = await license_service.get_or_create_entitlement(db)
+    if not row.stripe_customer_id:
+        raise HTTPException(400, "No Stripe customer on this install yet. Complete Checkout first.")
+    try:
+        session = stripe.billing_portal.Session.create(
+            customer=row.stripe_customer_id,
+            return_url=settings.BILLING_PORTAL_RETURN_URL,
+        )
+    except stripe.StripeError as exc:
+        raise HTTPException(502, f"Stripe portal error: {exc.user_message or str(exc)}") from exc
+    return {"portal_url": session.url}
 
 
 @router.post("/webhook")

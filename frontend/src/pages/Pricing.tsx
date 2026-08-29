@@ -3,6 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import type { BillingStatus } from "../types";
 
+function productBuyable(product: BillingStatus["products"]["pro_monthly"] | undefined): boolean {
+  return Boolean(product?.price_id_configured || product?.payment_link);
+}
+
 export default function Pricing() {
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,14 +33,32 @@ export default function Pricing() {
     setBusy(product);
     try {
       setError(null);
+      const info = status?.products[product];
+      // Prefer direct Payment Link when Checkout Price IDs aren't wired yet.
+      if (info?.payment_link && !info.price_id_configured) {
+        window.location.href = info.payment_link;
+        return;
+      }
       const session = await api.createCheckout(product, email || undefined);
       window.location.href = session.checkout_url;
     } catch (err) {
       setError(
         err instanceof ApiError
           ? `${err.status}: ${err.message}`
-          : "Checkout failed. Configure Stripe keys first (see docs/MONETIZATION.md).",
+          : "Checkout failed. Set Payment Links or Stripe Price IDs (docs/SELLER_KIT.md).",
       );
+      setBusy(null);
+    }
+  }
+
+  async function openPortal() {
+    setBusy("portal");
+    try {
+      setError(null);
+      const { portal_url } = await api.createBillingPortal();
+      window.location.href = portal_url;
+    } catch (err) {
+      setError(err instanceof ApiError ? `${err.status}: ${err.message}` : "Could not open billing portal.");
       setBusy(null);
     }
   }
@@ -56,7 +78,9 @@ export default function Pricing() {
     }
   }
 
-  const proUnlocked = status?.pro_features_unlocked ?? true;
+  const proActive = status?.plan === "pro" && status.active;
+  const canBuyPro = productBuyable(status?.products.pro_monthly);
+  const canBuySetup = productBuyable(status?.products.hosted_setup);
 
   return (
     <div className="page page-wide pricing-page">
@@ -68,7 +92,9 @@ export default function Pricing() {
       </p>
 
       {checkoutState === "success" && (
-        <p className="success-banner">Payment received. Pro unlocks as soon as Stripe confirms the webhook (or activate a license key below).</p>
+        <p className="success-banner">
+          Payment received. Pro unlocks when the Stripe webhook lands, or activate a license key below.
+        </p>
       )}
       {checkoutState === "canceled" && <p className="error-text">Checkout canceled — no charge.</p>}
       {error && <p className="error-text">{error}</p>}
@@ -91,7 +117,7 @@ export default function Pricing() {
           <ul>
             <li>Resume / cover letter / grant drafts</li>
             <li>Browser form-fill (human approve before submit)</li>
-            <li>Priority for sellers: recurring revenue</li>
+            <li>Recurring revenue for you as the seller</li>
           </ul>
           <label className="pricing-email">
             Email for receipt (optional)
@@ -100,13 +126,20 @@ export default function Pricing() {
           <button
             type="button"
             className="primary-btn"
-            disabled={busy !== null || !status?.billing_configured}
+            disabled={busy !== null || !canBuyPro || proActive}
             onClick={() => startCheckout("pro_monthly")}
           >
-            {busy === "pro_monthly" ? "Redirecting…" : proUnlocked && status?.plan === "pro" ? "Pro active" : "Upgrade with Stripe"}
+            {busy === "pro_monthly" ? "Redirecting…" : proActive ? "Pro active" : "Upgrade — pay with Stripe"}
           </button>
-          {!status?.billing_configured && (
-            <p className="muted">Stripe not configured on this server yet — set STRIPE_* env vars (docs/MONETIZATION.md).</p>
+          {proActive && status?.has_stripe_customer && (
+            <button type="button" style={{ marginTop: 8 }} disabled={busy !== null} onClick={openPortal}>
+              {busy === "portal" ? "Opening…" : "Manage billing"}
+            </button>
+          )}
+          {!canBuyPro && (
+            <p className="muted">
+              Wire <code>STRIPE_PAYMENT_LINK_PRO</code> or Price IDs — see docs/SELLER_KIT.md (60-minute path).
+            </p>
           )}
         </section>
 
@@ -118,19 +151,20 @@ export default function Pricing() {
             <li>Includes 1 year of Pro on this install</li>
             <li>Best first cash offer while MRR grows</li>
           </ul>
-          <button
-            type="button"
-            disabled={busy !== null || !status?.products.hosted_setup.price_id_configured}
-            onClick={() => startCheckout("hosted_setup")}
-          >
-            {busy === "hosted_setup" ? "Redirecting…" : "Buy setup"}
+          <button type="button" disabled={busy !== null || !canBuySetup} onClick={() => startCheckout("hosted_setup")}>
+            {busy === "hosted_setup" ? "Redirecting…" : "Buy setup — $499"}
           </button>
+          {!canBuySetup && (
+            <p className="muted">
+              Set <code>STRIPE_PAYMENT_LINK_HOSTED_SETUP</code> to take this payment immediately.
+            </p>
+          )}
         </section>
       </div>
 
       <section className="pricing-license">
         <h2>Already paid? Activate a license key</h2>
-        <p className="muted">For self-hosted installs sold via Payment Link — paste the JTPRO key you were emailed.</p>
+        <p className="muted">After a Payment Link sale, the seller emails you a JTPRO key — paste it here.</p>
         <form onSubmit={activateLicense} className="filter-bar">
           <input
             type="text"

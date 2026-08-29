@@ -3,6 +3,8 @@
 JustTech stays **local-first OSS** for discovery/scoring. You charge for the
 high-leverage automation path: **drafting + Playwright form-fill**.
 
+**Seller copy + 60-minute cash path:** [`SELLER_KIT.md`](SELLER_KIT.md).
+
 ## Products
 
 | SKU | Default price | What buyer gets |
@@ -12,51 +14,36 @@ high-leverage automation path: **drafting + Playwright form-fill**.
 
 Free forever: ingest, score, dashboard, profiles, tracking.
 
-## Money flow (Stripe)
+## Fastest money: Payment Links (no webhook required)
 
-1. Create a [Stripe](https://dashboard.stripe.com) account and activate payments.
-2. Create two Prices:
-   - Recurring monthly → copy Price ID into `STRIPE_PRICE_PRO_MONTHLY`
-   - One-time → copy Price ID into `STRIPE_PRICE_HOSTED_SETUP`
-3. Set secrets in `.env` (see `.env.example`):
-   - `STRIPE_SECRET_KEY`
-   - `STRIPE_WEBHOOK_SECRET` (endpoint: `POST /api/billing/webhook`)
-   - `JUSTTECH_REQUIRE_PRO=true` on any install you sell/host
-   - `JUSTTECH_LICENSE_SIGNING_SECRET` + `JUSTTECH_BILLING_ADMIN_SECRET` for offline keys
-4. Point Checkout success/cancel URLs at your UI (`BILLING_SUCCESS_URL` /
-   `BILLING_CANCEL_URL`).
-5. Customer opens **Pricing** in the app → **Upgrade with Stripe** → pays →
-   webhook activates Pro on that install.
-
-### Webhook events to enable
-
-- `checkout.session.completed`
-- `customer.subscription.updated`
-- `customer.subscription.deleted`
-
-### Offline / Payment Link sales
-
-If you sell via a Stripe Payment Link and email a key:
+1. Create products in [Stripe](https://dashboard.stripe.com) → **Payment Links**.
+2. Put URLs in `.env`:
+   - `STRIPE_PAYMENT_LINK_PRO`
+   - `STRIPE_PAYMENT_LINK_HOSTED_SETUP`
+3. Set `JUSTTECH_LICENSE_SIGNING_SECRET` (and optionally admin secret).
+4. Buyer pays via **Pricing** buttons → you mint a key:
 
 ```bash
-curl -X POST "$API/api/billing/mint-license" \
-  -H 'Content-Type: application/json' \
-  -d '{"admin_secret":"…","days_valid":365,"email":"buyer@example.com"}'
+python3 scripts/mint_license.py --days 365 --email buyer@example.com
 ```
 
-Buyer pastes the `JTPRO.…` key on **Pricing → Activate**.
+5. Buyer pastes the key under **Pricing → Activate**.
+
+## Full Checkout + auto-unlock (when you’re ready)
+
+1. Create Price IDs → `STRIPE_PRICE_PRO_MONTHLY` / `STRIPE_PRICE_HOSTED_SETUP`
+2. Set `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`
+3. Webhook URL: `POST /api/billing/webhook`
+4. Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
+5. Set `JUSTTECH_REQUIRE_PRO=true` on sold/hosted installs
+6. Subscribers manage billing via **Pricing → Manage billing** (Customer Portal)
 
 ## Schema
 
 Run [`backend/migrations/002_entitlements.sql`](../backend/migrations/002_entitlements.sql)
 on existing databases (fresh `docker compose` mounts already apply it).
 
-## Go-to-market this week
-
-1. Turn on Stripe test mode, buy your own Pro once end-to-end.
-2. Post one offer: “I install JustTech on your laptop/VPS — $499 founding setup.”
-3. Flip live mode; set `JUSTTECH_REQUIRE_PRO=true` on customer hosts.
-4. Convert setup clients to $29/mo Pro before the bundled year ends.
+## Architecture choice
 
 Do not build multi-tenant SaaS yet — one DB per customer (or self-host + license)
-matches the current architecture and ships revenue faster.
+matches the current stack and ships revenue faster.

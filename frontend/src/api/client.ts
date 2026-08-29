@@ -179,6 +179,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ product, customer_email: customerEmail }),
     }),
+  createBillingPortal: () => request<{ portal_url: string }>("/api/billing/portal", { method: "POST" }),
   activateLicense: (licenseKey: string) =>
     request<BillingStatus>("/api/billing/activate-license", {
       method: "POST",
