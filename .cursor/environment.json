@@ -1,0 +1,22 @@
+{
+  "name": "JUSTTECH Application Manager",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "terminals": [
+    {
+      "name": "backend",
+      "command": "cd backend && . .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000",
+      "description": "FastAPI backend (REST API + APScheduler ingestion) on http://localhost:8000"
+    },
+    {
+      "name": "frontend",
+      "command": "cd frontend && npm run dev -- --host 0.0.0.0",
+      "description": "React + Vite dev server (7-bucket dashboard) on http://localhost:5173"
+    }
+  ],
+  "ports": [
+    { "name": "backend", "port": 8000 },
+    { "name": "frontend", "port": 5173 }
+  ]
+}
