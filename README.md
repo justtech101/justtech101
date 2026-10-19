@@ -1,5 +1,8 @@
 # JUSTTECH Application Manager
 
+> **Also in this repo:** [`freeflow-core/`](freeflow-core/README.md), FreeFlow AI Phase 1
+> (missed-call text-back, AI receptionist, lead follow-up). It is a separate Node.js service.
+
 An open-source, local-first web app that finds job and grant opportunities,
 scores them, drafts application material, tracks them through a review
 pipeline, and uses Playwright to fill (never submit) application forms —

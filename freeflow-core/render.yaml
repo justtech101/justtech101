@@ -1,0 +1,33 @@
+# Render Blueprint — one web service per environment (staging number / production number).
+# Secrets are `sync: false`: Render asks for them in the dashboard; they never live in git.
+# Use a paid instance type: a sleeping free instance would miss webhooks and the job poller.
+services:
+  - type: web
+    name: freeflow-core-staging
+    runtime: node
+    rootDir: freeflow-core
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - { key: NODE_ENV, value: production }
+      - { key: DEPLOY_ENV, value: staging }
+      - { key: TWILIO_VALIDATE_SIGNATURES, value: "true" }
+      - { key: JOB_POLL_SECONDS, value: "60" }
+      - { key: FOLLOWUP_ACCELERATED, value: "false" }
+      - { key: PUBLIC_BASE_URL, sync: false }
+      - { key: DATABASE_URL, sync: false }
+      - { key: DATABASE_SSL, value: "true" }
+      - { key: TWILIO_ACCOUNT_SID, sync: false }
+      - { key: TWILIO_AUTH_TOKEN, sync: false }
+      - { key: TWILIO_PHONE_NUMBER, sync: false }
+      - { key: OWNER_ALERT_NUMBER, sync: false }
+      - { key: OWNER_FORWARD_NUMBER, sync: false }
+      - { key: ANTHROPIC_API_KEY, sync: false }
+      - { key: ADMIN_API_KEY, sync: false }
+      - { key: SMTP_HOST, sync: false }
+      - { key: SMTP_USER, sync: false }
+      - { key: SMTP_PASSWORD, sync: false }
+      - { key: SUMMARY_EMAIL_FROM, sync: false }
+      - { key: SUMMARY_EMAIL_TO, sync: false }

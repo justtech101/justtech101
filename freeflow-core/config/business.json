@@ -1,0 +1,62 @@
+{
+  "_readme": "The ONLY place facts live. Every system may say only what is here. null = unknown/unconfirmed = 'Let me have Jesse confirm that'. Never put 0 for an unknown price. See BLOCKERS.md for values waiting on Jesse.",
+
+  "business_name": "JustTech",
+  "parent_brand": "FreeFlow AI",
+  "owner_name": "Jesse",
+  "website": "backonlinefast.com",
+  "timezone": "America/New_York",
+
+  "service_area": {
+    "description": "Augusta and the CSRA",
+    "remote_available": null
+  },
+
+  "hours": null,
+  "_hours_example": { "mon": ["09:00", "17:00"], "tue": ["09:00", "17:00"], "sat": null },
+
+  "callback_windows": null,
+  "_callback_windows_example": [{ "days": ["mon", "tue", "wed", "thu", "fri"], "start": "17:00", "end": "18:00" }],
+
+  "booking_link": null,
+  "same_day_available": null,
+  "turnaround_times": [],
+
+  "services": [],
+  "_services_example": [{ "name": "Computer repair", "notes": "One plain-language fact the follow-up may share.", "price": null }],
+
+  "textback": {
+    "dedupe_hours": 24,
+    "max_exchanges": 4,
+    "max_low_signal_attempts": 2,
+    "alert_on_missed_call": true
+  },
+
+  "receptionist": {
+    "max_human_requests": 2,
+    "max_off_script": 3,
+    "max_no_input": 2,
+    "sms_silence_summary_minutes": 30
+  },
+
+  "voice": {
+    "ring_owner_seconds": 20,
+    "receptionist_enabled": true,
+    "tts_voice": "Polly.Joanna"
+  },
+
+  "followup": {
+    "steps": [
+      { "step": 1, "offset_minutes": 120 },
+      { "step": 2, "offset_minutes": 1440 },
+      { "step": 3, "offset_minutes": 4320 },
+      { "step": 4, "offset_minutes": 10080 }
+    ],
+    "quiet_hours": { "start": "20:00", "end": "08:00" }
+  },
+
+  "summary": {
+    "daily_time": "08:00",
+    "callback_reminder_minutes_before": 15
+  }
+}

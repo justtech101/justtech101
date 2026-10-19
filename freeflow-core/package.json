@@ -1,0 +1,40 @@
+{
+  "name": "freeflow-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FreeFlow AI Phase 1: missed-call text-back, AI receptionist/intake, and lead follow-up on one shared platform.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "migrate": "tsx src/migrate.ts",
+    "cli": "tsx src/cli.ts",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "express": "^5.3.0",
+    "luxon": "^3.7.2",
+    "nodemailer": "^10.1.7",
+    "pg": "^8.23.1",
+    "twilio": "^6.2.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/luxon": "^3.7.6",
+    "@types/node": "^26.6.5",
+    "@types/nodemailer": "^8.0.2",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
