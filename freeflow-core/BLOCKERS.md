@@ -18,18 +18,25 @@ Blocks: Checkpoint A's live SMS test, all of Blocks B–D on real phones.
 **Answer:**
 
 ### B2. Business facts for `config/business.json` — *Step 4*
-Until these are confirmed they stay `null`, and the systems say "Let me have
-Jesse confirm that":
-- [ ] **Hours** (per weekday). Used for the after-hours opener line.
-- [ ] **Callback windows** (days + start/end). Used for "Jesse can call you back [window]". If none is set, the systems say "as soon as possible".
-- [ ] **Service list**: names + one plain-language note each. The note is the "useful fact" in follow-up step 2.
-- [ ] **Any prices the systems may quote** (per service). Unconfirmed = `null`. Never `0`.
-- [ ] **Booking link** (if any).
+**Filled in from backonlinefast.com (Oct 2026). Please confirm or correct:**
+- [ ] The **8 services** and their one-line notes, copied from "What I fix". The notes are what follow-up step 2 shares.
+- [ ] **Published prices**: Phone SIM unlock **$49.99**, cable & internet bill review **$50 flat**. These are the only prices any system may quote. Every other service's price is `null`, so it gets "Let me have Jesse confirm that".
+- [ ] **Policies** the systems may repeat: free quote before any work, the price comes before work and you can say no, software is usually fixed remotely while you watch.
+- [ ] **Service area**: "Augusta, GA and the CSRA in person; remote help anywhere" (remote = yes).
+- [ ] **Business name in texts**: the plan's opener says "JustTech". The website brand is "Back Online Fast by Justtech LLC". Which should callers see? (`business_name` / `parent_brand`)
+
+**Still unknown, so it stays `null` and the systems defer:**
+- [ ] **Hours** (per weekday). Used for the after-hours opener line. The site doesn't list any.
+- [ ] **Callback windows** (days + start/end). Used for "Jesse can call you back [window]". Without them, the systems say "as soon as possible".
 - [ ] **Same-day service**: true/false. Until it's true, nothing promises same-day.
 - [ ] **Turnaround times** the systems may state (if any).
-- [ ] **Remote service**: offered, yes or no?
-- [ ] Confirm the **service area** wording: currently "Augusta and the CSRA".
-- [ ] Confirm the **opener** wording on a real phone, and tune it after live tests (it's in `src/prompts/textback.md`).
+- [ ] **Booking link** (if any). The site's ticket form opens an email draft, so there's no link yet.
+- [ ] Confirm the **opener** wording on a real phone, and tune it after live tests (`src/prompts/textback.md`).
+
+**Your current number:** the site lists **(803) 380-6153** for call or text. Options for
+production: (a) port that number into Twilio so it becomes the business number
+(customers keep the number they know), or (b) keep it as `OWNER_FORWARD_NUMBER` and
+publish a new 706 number. Porting takes 1–4 weeks, so if you choose (a), start it early.
 **Answer:**
 
 ### B3. Claude API key and hosting account — *Block A*

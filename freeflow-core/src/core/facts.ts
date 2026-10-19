@@ -34,6 +34,7 @@ export function factsBlock(config: BusinessConfig): string {
     `Booking link: ${config.booking_link ?? unknown}`,
     `Same-day service: ${config.same_day_available === true ? "available" : "NOT confirmed — never promise same-day"}`,
     `Turnaround times: ${turnaround}`,
+    `Policies (may be stated as written):\n${config.policies.length ? config.policies.map((x) => `- ${x}`).join("\n") : "- (none)"}`,
     `Services:\n${services}`,
   ].join("\n");
 }

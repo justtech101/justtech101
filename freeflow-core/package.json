@@ -14,7 +14,10 @@
     "migrate": "tsx src/migrate.ts",
     "cli": "tsx src/cli.ts",
     "typecheck": "tsc -p tsconfig.test.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "twilio": "tsx src/setup-twilio.ts",
+    "simulate": "tsx src/simulate.ts",
+    "ai-check": "tsx src/ai-check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

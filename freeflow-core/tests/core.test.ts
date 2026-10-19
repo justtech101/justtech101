@@ -146,3 +146,43 @@ describe("helpers", () => {
     expect(b).toBeNull();
   });
 });
+
+describe("Twilio setup helper", () => {
+  it("points all four webhooks at the service", async () => {
+    const { webhookConfig } = await import("../src/setup-twilio.js");
+    expect(webhookConfig("https://ff.onrender.com/")).toMatchObject({
+      voiceUrl: "https://ff.onrender.com/voice/incoming",
+      voiceFallbackUrl: "https://ff.onrender.com/voice/fallback",
+      statusCallback: "https://ff.onrender.com/voice/status",
+      smsUrl: "https://ff.onrender.com/sms/incoming",
+    });
+  });
+});
+
+describe("live AI check harness", () => {
+  it("grades ideal model answers PASS and a slipped price WARN (guard caught it)", async () => {
+    const { CHECKS } = await import("../src/ai-check.js");
+    const { tb, turn } = await import("./helpers.js");
+    const ctx = await makeCtx();
+    const defer = "Let me have Jesse confirm that and get right back to you.";
+    ctx.ai.push(
+      turn("question", { need: "laptop screen" }, { answer_to_question: defer }),
+      turn("question", {}, { answer_to_question: "A SIM unlock is $49.99." }),
+      turn("question", {}, { answer_to_question: defer }),
+      turn("human_request"),
+      turn("upset"),
+      turn("answer", { need: "laptop won't turn on", details: "HP, after an update", location: "Grovetown" }),
+      turn("answer", { confirm: true }),
+      tb({ name: "Maria", need: "wifi keeps dropping" }),
+      tb({ reply: "I'm Jesse's automated text line — Jesse will follow up personally." }),
+      tb({ reply: "Screens are $99!" }), // slips: guard must catch it
+      tb({ reply: "No worries!", low_signal: true }),
+    );
+    const { Spy } = await import("../src/ai-check.js");
+    const noDb = { query: async () => ({ rows: [], rowCount: 0 }) } as any; // ai-check runs without a database
+    const deps = { ...ctx.deps, db: noDb, ai: new Spy(ctx.ai) };
+    const results = [];
+    for (const make of CHECKS) results.push((await make(deps).run(deps)).status);
+    expect(results).toEqual(["PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "WARN", "PASS"]);
+  });
+});

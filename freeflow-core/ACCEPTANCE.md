@@ -4,6 +4,11 @@ Two columns: **Auto** means covered by `npm test` with fake Twilio/AI and a real
 Postgres, which runs on every change. **Live** means it must also be checked by hand on the
 staging number, then on production (Step 14). Phase 1 is done when every Live box is ticked.
 
+## Before any phone test
+- [ ] `npm run ai-check` against the real model: no FAIL. Any WARN means the guard caught a slip, so review the prompt. Slowest turn under 8 s.
+- [ ] `npm run simulate`: a missed call, a text conversation and a follow-up all look right.
+- [ ] `npm run twilio -- check`: all four webhooks point at the staging service.
+
 ## System 1 — missed-call text-back
 | Criterion | Auto (test) | Live |
 |---|---|---|

@@ -1,62 +1,134 @@
 {
-  "_readme": "The ONLY place facts live. Every system may say only what is here. null = unknown/unconfirmed = 'Let me have Jesse confirm that'. Never put 0 for an unknown price. See BLOCKERS.md for values waiting on Jesse.",
-
+  "_readme": "The ONLY place facts live. Every system may say only what is here. null = unknown/unconfirmed = 'Let me have Jesse confirm that'. Never put 0 for an unknown price. Services, prices and policies below are copied from backonlinefast.com (Oct 2026) and still need Jesse's confirmation — see BLOCKERS.md B2.",
   "business_name": "JustTech",
-  "parent_brand": "FreeFlow AI",
+  "parent_brand": "Back Online Fast by Justtech LLC",
   "owner_name": "Jesse",
   "website": "backonlinefast.com",
   "timezone": "America/New_York",
-
   "service_area": {
-    "description": "Augusta and the CSRA",
-    "remote_available": null
+    "description": "Augusta, GA and the CSRA in person; remote help anywhere",
+    "remote_available": true
   },
-
   "hours": null,
-  "_hours_example": { "mon": ["09:00", "17:00"], "tue": ["09:00", "17:00"], "sat": null },
-
+  "_hours_example": {
+    "mon": [
+      "09:00",
+      "17:00"
+    ],
+    "tue": [
+      "09:00",
+      "17:00"
+    ],
+    "sat": null
+  },
   "callback_windows": null,
-  "_callback_windows_example": [{ "days": ["mon", "tue", "wed", "thu", "fri"], "start": "17:00", "end": "18:00" }],
-
+  "_callback_windows_example": [
+    {
+      "days": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri"
+      ],
+      "start": "17:00",
+      "end": "18:00"
+    }
+  ],
   "booking_link": null,
   "same_day_available": null,
   "turnaround_times": [],
-
-  "services": [],
-  "_services_example": [{ "name": "Computer repair", "notes": "One plain-language fact the follow-up may share.", "price": null }],
-
+  "services": [
+    {
+      "name": "Slow computer",
+      "notes": "Slow startups, freezing and crawling computers are usually fixed remotely.",
+      "price": null
+    },
+    {
+      "name": "Viruses and pop-ups",
+      "notes": "Strange pop-ups, fake warnings and misbehaving browsers can usually be cleaned up remotely.",
+      "price": null
+    },
+    {
+      "name": "Wi-Fi, email and passwords",
+      "notes": "Dropping internet, email accounts that won't work and password problems can usually be sorted out remotely.",
+      "price": null
+    },
+    {
+      "name": "Printers and setup",
+      "notes": "Printers that won't connect and new devices that need setting up can usually be handled remotely.",
+      "price": null
+    },
+    {
+      "name": "Overheating and noisy fans",
+      "notes": "Hot or loud hardware gets an in-person diagnosis, cleaning and cooling around Augusta.",
+      "price": null
+    },
+    {
+      "name": "Computer and phone repair",
+      "notes": "You get a repair quote before any repair work is done.",
+      "price": null
+    },
+    {
+      "name": "Phone SIM unlock",
+      "notes": "Unlocks are done remotely, with a free eligibility check before you pay anything.",
+      "price": "$49.99"
+    },
+    {
+      "name": "Cable and internet bill review",
+      "notes": "Covers Xfinity, Spectrum, AT&T and most providers, remote or in person around Augusta.",
+      "price": "$50 flat"
+    }
+  ],
   "textback": {
     "dedupe_hours": 24,
     "max_exchanges": 4,
     "max_low_signal_attempts": 2,
     "alert_on_missed_call": true
   },
-
   "receptionist": {
     "max_human_requests": 2,
     "max_off_script": 3,
     "max_no_input": 2,
     "sms_silence_summary_minutes": 30
   },
-
   "voice": {
     "ring_owner_seconds": 20,
     "receptionist_enabled": true,
     "tts_voice": "Polly.Joanna"
   },
-
   "followup": {
     "steps": [
-      { "step": 1, "offset_minutes": 120 },
-      { "step": 2, "offset_minutes": 1440 },
-      { "step": 3, "offset_minutes": 4320 },
-      { "step": 4, "offset_minutes": 10080 }
+      {
+        "step": 1,
+        "offset_minutes": 120
+      },
+      {
+        "step": 2,
+        "offset_minutes": 1440
+      },
+      {
+        "step": 3,
+        "offset_minutes": 4320
+      },
+      {
+        "step": 4,
+        "offset_minutes": 10080
+      }
     ],
-    "quiet_hours": { "start": "20:00", "end": "08:00" }
+    "quiet_hours": {
+      "start": "20:00",
+      "end": "08:00"
+    }
   },
-
   "summary": {
     "daily_time": "08:00",
     "callback_reminder_minutes_before": 15
-  }
+  },
+  "policies": [
+    "Every job starts with a free quote, explained in plain English.",
+    "You get the price before any work starts, and you can say no.",
+    "Software problems are usually fixed remotely, while you watch.",
+    "Repairs: you get a repair quote before anything is done."
+  ]
 }

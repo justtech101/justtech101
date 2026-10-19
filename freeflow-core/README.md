@@ -45,6 +45,17 @@ migrations/ 001_init.sql                                  leads, messages, jobs,
 tests/      core / textback / receptionist / followup     acceptance tests, real Postgres
 ```
 
+## Your next steps, in order
+1. **Answer BLOCKERS.md B2.** Confirm the services and prices copied from backonlinefast.com, and add hours and callback windows.
+2. **Get an Anthropic API key, then run `npm run ai-check`.** It runs the risky scenarios
+   against the real model and prints PASS / WARN / FAIL plus response times. It costs a few cents and needs no Twilio.
+3. **Try it in a terminal:** `npm run simulate`. Text as a customer, fake a missed call, and
+   skip ahead in time to see the follow-ups. It needs a scratch Postgres database and no Twilio.
+4. **Deploy staging** (below), then `npm run twilio -- search 706` →
+   `npm run twilio -- buy <number> --confirm`. That buys the number and wires all four webhooks.
+   Register the number for A2P 10DLC texting.
+5. **Work through ACCEPTANCE.md** on the staging number, then go live (Step 14).
+
 ## Run it locally
 Needs Node 20+ and Postgres 14+.
 ```bash
@@ -72,7 +83,8 @@ npm run typecheck
    (staging first). Enter every `sync: false` value in the dashboard. Use a paid
    instance: a sleeping instance misses webhooks.
 3. The service runs migrations on boot and starts the job poller (every 60s).
-4. In the Twilio console, set these on the **staging** number:
+4. Run `npm run twilio -- configure <number>` (or `buy`) to set these on the **staging** number.
+   `npm run twilio -- check` shows what the number currently points at. To set them by hand in the Twilio console:
    - **Voice → A call comes in:** `POST {PUBLIC_BASE_URL}/voice/incoming`
    - **Voice → Primary handler fails:** `POST {PUBLIC_BASE_URL}/voice/fallback`
    - **Voice → Call status changes:** `POST {PUBLIC_BASE_URL}/voice/status`
@@ -98,6 +110,9 @@ npm run cli -- pause <phone>     npm run cli -- reset <phone>     npm run cli --
 npm run cli -- pause-all         npm run cli -- resume-all        npm run cli -- queue
 npm run cli -- summary           npm run cli -- audit [hours]     npm run cli -- add-lead <phone> --consent "..."
 ```
+Other tools: `npm run simulate` (terminal sandbox) · `npm run ai-check` (live model check) ·
+`npm run twilio -- search|buy|configure|check`. CI (`.github/workflows/freeflow-core.yml`)
+runs the typecheck, build and all tests on every push.
 Jesse can do the same by texting the business number. See RUNBOOK.md.
 
 ## Changing what the systems say

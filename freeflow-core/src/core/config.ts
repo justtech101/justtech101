@@ -30,6 +30,8 @@ export const BusinessConfigSchema = z.object({
   booking_link: z.string().nullable(),
   same_day_available: z.boolean().nullable(),
   turnaround_times: z.array(z.object({ service: z.string(), turnaround: z.string() })).default([]),
+  // Plain statements the systems may repeat word for word (e.g. "free quote before any work").
+  policies: z.array(z.string()).default([]),
   services: z.array(ServiceSchema),
   textback: z.object({
     dedupe_hours: z.number().positive(),
