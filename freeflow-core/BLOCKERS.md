@@ -9,12 +9,21 @@ tests (`npm test`). Each blocker lists exactly which step it holds up.
 
 ---
 
-### B1. Twilio account, funding, and approval to buy two numbers — *Step 5 / Block B*
-Needed: a funded Twilio account, and a go-ahead to buy one local Augusta (706)
-number for **staging** and one for **production**. Also needed for US texting:
-A2P 10DLC registration (brand + campaign) for each number. Without it, carriers
-filter or block texts from the numbers.
-Blocks: Checkpoint A's live SMS test, all of Blocks B–D on real phones.
+### B0. Google Voice mode setup (start here) — *replaces Twilio for now*
+- [ ] Google Voice settings: forward messages to email, missed-call email alerts, and voicemail by email with transcripts on (README step 1).
+- [ ] Google Cloud project with the Gmail API, an OAuth consent screen set to **In production**, and a Desktop OAuth client (README step 2).
+- [ ] `npm run gmail -- auth` → put `GMAIL_REFRESH_TOKEN` in the hosting dashboard.
+- [ ] **`npm run gmail -- inspect 20` output.** I couldn't see your real Google Voice emails, so the parser is built from the commonly seen formats. Paste the output (numbers redacted). Fix anything that says `unknown` or reads the wrong number before going live.
+- [ ] Is **(803) 380-6153** your Google Voice number? Set it as `GOOGLE_VOICE_NUMBER`.
+- [ ] Confirm you're OK with co-pilot mode: Google Voice's policy forbids automated texting, so in this mode **you send every text** (the system drafts them). Full automation needs Twilio (B1).
+**Answer:**
+
+### B1. Twilio (later, for full automation) — *only when switching to CHANNEL=twilio*
+Needed: a funded Twilio account and numbers, plus A2P 10DLC registration (brand +
+campaign) for texting. Without that registration, carriers filter or block texts. `npm run twilio --
+search|buy|configure` handles the rest. If you want customers to keep calling
+(803) 380-6153, port it from Google Voice to Twilio (1–4 weeks). Not needed for Google
+Voice mode.
 **Answer:**
 
 ### B2. Business facts for `config/business.json` — *Step 4*
@@ -46,7 +55,10 @@ Enter them **only** in the hosting dashboard's environment settings. Never paste
 them into chat or commit them to the repo.
 **Answer:**
 
-### B4. Jesse's mobile number — *Step 3*
+### B4. Jesse's mobile number — *Step 3 (Twilio mode only)*
+In Google Voice mode, alerts and drafts go to your email (`OWNER_ALERT_EMAIL`). Turn on
+Gmail notifications on your phone so drafts arrive within seconds.
+
 This number receives every alert. Texting the business number from it breaks
 into any thread (see RUNBOOK.md). Also decide whether inbound calls should ring
 this mobile first (`OWNER_FORWARD_NUMBER`), with the receptionist as backup,
@@ -67,6 +79,9 @@ production number gets pointed at the service.
 ---
 
 ## Decisions made without Jesse (flag if you disagree)
+- **Google Voice mode drafts, never sends.** This follows Google Voice's acceptable-use policy (no automated messaging). The unofficial email-reply trick that could auto-text was ruled out on purpose: it breaks the policy and risks your number.
+- **Voicemails with a transcript** skip the generic "sorry we missed your call" and get a reply that answers what they said ("Hey, this is Jesse at JustTech — got your voicemail. …").
+- **First start ignores old emails.** When Google Voice mode first runs, it skips notifications older than that moment, so nobody from last week gets texted.
 - **Job poll interval is 60s, not 5 min.** The 2-minute summary and the 15-minute callback reminder need it. The cost is negligible.
 - **Follow-up timing is measured from when the thread went quiet.** That's the anchor: step 1 at +2h, step 2 at +1 day, step 3 at +3 days, step 4 at +7 days. A step that lands in quiet hours waits for 8:00 AM.
 - **Partial calls.** If a caller hangs up partway through the receptionist intake, Jesse gets the partial summary and no text-back is sent. If the caller gave no details at all, the missed-call text-back fires.

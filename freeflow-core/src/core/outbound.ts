@@ -1,4 +1,5 @@
-import type { Deps } from "./deps.js";
+import { draftForOwner } from "./copilot.js";
+import { isCopilot, type Deps } from "./deps.js";
 import { alertOwner } from "./notify.js";
 import { prettyPhone } from "./phone.js";
 import {
@@ -57,6 +58,23 @@ export async function sendToLead(
       return { ok: false, reason: "duplicate" };
     } else {
       return { ok: false, reason: "duplicate" };
+    }
+  }
+
+  if (isCopilot(deps)) {
+    // Google Voice: a person sends it. Email the draft; the owner's "I sent it" link marks it sent.
+    try {
+      await draftForOwner(deps, lead, row.id, body, opts.kind);
+      await updateMessage(deps.db, row.id, { status: "drafted" });
+      await updateLead(deps.db, lead.id, { last_contact_at: now });
+      return { ok: true, message: { ...row, status: "drafted" } };
+    } catch (err: any) {
+      // A failed draft is a Gmail problem, not an undeliverable number: throw so the caller
+      // retries (the Voice email stays unlabelled; a job backs off). The keyed row makes the retry safe.
+      const error = err?.message ?? String(err);
+      await updateMessage(deps.db, row.id, { status: "failed", error });
+      await logEvent(deps.db, lead.id, "error", `draft email failed (${opts.kind}): ${error}`, now);
+      throw new Error(`draft email failed: ${error}`);
     }
   }
 

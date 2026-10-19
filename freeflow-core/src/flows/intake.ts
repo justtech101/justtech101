@@ -1,9 +1,9 @@
 import { z } from "zod";
 import type { Deps } from "../core/deps.js";
 import { factsBlock } from "../core/facts.js";
-import { guardReply } from "../core/guard.js";
+import { deferLine, guardReply } from "../core/guard.js";
 import { normalizePhone, prettyPhone, spokenPhone } from "../core/phone.js";
-import { loadPrompt, render, section } from "../core/prompts.js";
+import { loadPrompt, render, section, variant } from "../core/prompts.js";
 import { logEvent } from "../core/store.js";
 import { nextCallbackWindow } from "../core/time.js";
 
@@ -87,7 +87,7 @@ function vars(deps: Deps, extra: Record<string, string | null> = {}) {
 }
 
 function t(deps: Deps, key: string, extra: Record<string, string | null> = {}): string {
-  return render(section(loadPrompt("receptionist"), key), vars(deps, extra));
+  return render(variant(loadPrompt("receptionist"), key, deps.env.CHANNEL), vars(deps, extra));
 }
 
 function nextStep(s: IntakeState): Step {
@@ -137,6 +137,7 @@ function systemPrompt(deps: Deps, s: IntakeState, channel: Channel): string {
     question: questionFor(deps, s, channel),
     collected,
     facts: factsBlock(deps.config),
+    defer_line: deferLine(deps.config, deps.env.CHANNEL),
   }));
 }
 
@@ -169,7 +170,7 @@ function mergeFields(s: IntakeState, x: TurnOutput["extracted"], deps: Deps) {
 
 async function guarded(ctx: TurnContext, text: string | null): Promise<string | null> {
   if (!text) return null;
-  const g = guardReply(text, ctx.deps.config);
+  const g = guardReply(text, ctx.deps.config, ctx.deps.env.CHANNEL);
   if (g.violations.length) {
     await logEvent(ctx.deps.db, ctx.leadId, "guardrail", `intake reply blocked: ${g.violations.join("; ")} | original: ${text}`, ctx.deps.clock());
   }

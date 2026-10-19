@@ -1,4 +1,4 @@
-import type { Deps } from "../core/deps.js";
+import { isCopilot, type Deps } from "../core/deps.js";
 import { scheduleJob, type Job, type JobResult } from "../core/jobs.js";
 import { alertOwner } from "../core/notify.js";
 import { prettyPhone } from "../core/phone.js";
@@ -83,6 +83,11 @@ export function formatSummary(deps: Deps, s: DailySummary): { sms: string; email
 export async function sendDailySummary(deps: Deps): Promise<DailySummary> {
   const summary = await buildDailySummary(deps);
   const { sms, email } = formatSummary(deps, summary);
+  if (isCopilot(deps)) {
+    // Google Voice mode: the owner's channel is already email, so send the full version once.
+    await alertOwner(deps, email, null, { subject: `${deps.config.business_name} daily summary` });
+    return summary;
+  }
   await alertOwner(deps, sms);
   try {
     await deps.mailer.send(`${deps.config.business_name} daily summary`, email);

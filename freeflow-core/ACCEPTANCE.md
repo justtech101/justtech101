@@ -4,6 +4,21 @@ Two columns: **Auto** means covered by `npm test` with fake Twilio/AI and a real
 Postgres, which runs on every change. **Live** means it must also be checked by hand on the
 staging number, then on production (Step 14). Phase 1 is done when every Live box is ticked.
 
+## Google Voice mode (current channel)
+The AI phone receptionist (System 2 voice) needs Twilio. In this mode, System 2 runs over
+text, and voicemail transcripts feed into it.
+| Criterion | Auto (test) | Live |
+|---|---|---|
+| `npm run gmail -- inspect 20`: every recent Voice email parses as the right kind and number | `googlevoice.test.ts` "parsing" | [ ] |
+| Missed call → draft opener email within 60 s of Google's notification email | "missed call -> the owner gets a draft" | [ ] [ ] [ ] (3 phones) |
+| Voicemail with a transcript → draft that answers what they said | "a voicemail with a transcript" | [ ] |
+| Customer text → AI draft; name + need captured → "New lead" email, no more drafts | "customer texts are answered" | [ ] |
+| STOP → opted out, no further drafts | "STOP by text" | [ ] |
+| "I sent it" / "Pause" links work from your phone | "one-tap links" | [ ] |
+| Follow-up drafts at the configured times, never 8 PM–8 AM | "follow-ups arrive as drafts" | [ ] |
+| Price not in config → draft defers, quotes nothing | `receptionist.test.ts` "CHECKPOINT C" + `npm run ai-check` | [ ] |
+| No text is ever sent automatically | every Google Voice test asserts zero SMS | [ ] |
+
 ## Before any phone test
 - [ ] `npm run ai-check` against the real model: no FAIL. Any WARN means the guard caught a slip, so review the prompt. Slowest turn under 8 s.
 - [ ] `npm run simulate`: a missed call, a text conversation and a follow-up all look right.

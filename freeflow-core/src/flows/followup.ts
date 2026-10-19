@@ -3,7 +3,7 @@ import { scheduleJob, type Job, type JobResult } from "../core/jobs.js";
 import { alertOwner } from "../core/notify.js";
 import { isOptOutError, sendToLead } from "../core/outbound.js";
 import { prettyPhone } from "../core/phone.js";
-import { loadPrompt, render, section } from "../core/prompts.js";
+import { loadPrompt, render, variant } from "../core/prompts.js";
 import { getLead, listMessages, logEvent, updateLead, type Lead } from "../core/store.js";
 import { isQuietHours, quietHoursEnd } from "../core/time.js";
 
@@ -55,7 +55,7 @@ export function renderFollowup(deps: Deps, lead: Lead, step: number): string {
   const prompts = loadPrompt("followup");
   const note = step === 2 ? serviceNote(deps, lead) : null;
   const key = step === 2 && !note ? "step_2_no_note" : `step_${step}`;
-  return render(section(prompts, key), {
+  return render(variant(prompts, key, deps.env.CHANNEL), {
     name: lead.name ?? "there",
     need: lead.need ?? "what you reached out about",
     business_name: deps.config.business_name,

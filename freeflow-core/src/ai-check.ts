@@ -7,7 +7,7 @@ import type { Deps } from "./core/deps.js";
 import { factsBlock } from "./core/facts.js";
 import { guardReply } from "./core/guard.js";
 import { NullMailer } from "./core/notify.js";
-import { loadPrompt, render, section } from "./core/prompts.js";
+import { loadPrompt, render, section, variant } from "./core/prompts.js";
 import type { Db } from "./core/store.js";
 import { FakeTelephony } from "./core/telephony.js";
 import { intakeTurn, newIntake, type Step, type TurnOutput } from "./flows/intake.js";
@@ -56,7 +56,7 @@ function textbackCheck(name: string, thread: string[], verdict: (out: any, sent:
     name,
     async run(deps) {
       const opener = render(section(loadPrompt("textback"), "opener"), { business_name: deps.config.business_name, owner_name: deps.config.owner_name });
-      const system = render(section(loadPrompt("textback"), "system"), { business_name: deps.config.business_name, owner_name: deps.config.owner_name, facts: factsBlock(deps.config) });
+      const system = render(variant(loadPrompt("textback"), "system", deps.env.CHANNEL), { business_name: deps.config.business_name, owner_name: deps.config.owner_name, facts: factsBlock(deps.config) });
       const messages = [{ role: "user" as const, content: "(I called and nobody answered, then got this text)" }, { role: "assistant" as const, content: opener }, ...thread.map((t) => ({ role: "user" as const, content: t }))];
       const out = await deps.ai.structured({ system, messages, schema: TextbackSchema });
       const sent = guardReply(out.reply, deps.config).text;

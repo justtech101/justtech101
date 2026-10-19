@@ -75,6 +75,17 @@ const bool = z
   .transform((v) => v === "true" || v === "1");
 
 export const EnvSchema = z.object({
+  // "twilio": fully automated (Twilio number). "google_voice": co-pilot — the service reads
+  // Google Voice's notification emails and drafts every text for the owner to send by hand.
+  CHANNEL: z.enum(["twilio", "google_voice"]).default("twilio"),
+  GMAIL_CLIENT_ID: z.string().default(""),
+  GMAIL_CLIENT_SECRET: z.string().default(""),
+  GMAIL_REFRESH_TOKEN: z.string().default(""),
+  GMAIL_ADDRESS: z.string().default(""),
+  OWNER_ALERT_EMAIL: z.string().default(""),
+  GOOGLE_VOICE_NUMBER: z.string().default(""),
+  GV_POLL_SECONDS: z.coerce.number().positive().default(20),
+  ACTION_SECRET: z.string().default(""),
   PORT: z.coerce.number().default(3000),
   PUBLIC_BASE_URL: z.string().default("http://localhost:3000"),
   DEPLOY_ENV: z.string().default("staging"),

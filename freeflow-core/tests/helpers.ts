@@ -6,6 +6,7 @@ import type { Ai, AiTurn } from "../src/core/ai.js";
 import { loadBusinessConfig, loadEnv, type BusinessConfig } from "../src/core/config.js";
 import type { Deps } from "../src/core/deps.js";
 import { NullMailer } from "../src/core/notify.js";
+import { FakeGmail } from "../src/core/gmail.js";
 import { createPool, type Db } from "../src/core/store.js";
 import { FakeTelephony } from "../src/core/telephony.js";
 import { runDueJobs } from "../src/core/jobs.js";
@@ -57,6 +58,7 @@ export function et(s: string): Date {
 }
 
 export interface TestCtx {
+  gmail: FakeGmail;
   deps: Deps;
   tel: FakeTelephony;
   ai: FakeAi;
@@ -88,10 +90,11 @@ export async function makeCtx(opts: { config?: (c: BusinessConfig) => void; env?
   const tel = new FakeTelephony();
   const ai = new FakeAi();
   const mailer = new NullMailer();
-  const deps: Deps = { db: await db(), telephony: tel, ai, mailer, config, env, clock: () => now.t };
+  const gmail = new FakeGmail();
+  const deps: Deps = { db: await db(), telephony: tel, ai, mailer, config, env, clock: () => now.t, gmail };
   const app = buildApp(deps);
   return {
-    deps, tel, ai, mailer, now, app,
+    gmail, deps, tel, ai, mailer, now, app,
     advance(minutes) {
       now.t = new Date(now.t.getTime() + minutes * 60_000);
     },

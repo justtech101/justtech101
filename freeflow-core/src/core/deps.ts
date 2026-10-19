@@ -1,6 +1,7 @@
 import type { Ai } from "./ai.js";
 import type { BusinessConfig, Env } from "./config.js";
 import type { Mailer } from "./notify.js";
+import type { Gmail } from "./gmail.js";
 import type { Db } from "./store.js";
 import type { Telephony } from "./telephony.js";
 
@@ -13,4 +14,8 @@ export interface Deps {
   config: BusinessConfig;
   env: Env;
   clock: () => Date;
+  /** Google Voice co-pilot mode only: reads Voice emails, emails the owner. */
+  gmail?: Gmail;
 }
+
+export const isCopilot = (deps: Deps) => deps.env.CHANNEL === "google_voice";

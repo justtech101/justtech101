@@ -39,7 +39,7 @@ Return (structured output):
   - callback_number: a phone number they stated, digits only, else null.
   - confirm: for yes/no questions (callback_number, callback_offer) — true for yes, false for no, else null.
 - ack: at most one short, warm sentence acknowledging their answer (e.g. "Got it, sorry to hear that."), or null. Do NOT ask a question in ack — the code asks the next question.
-- answer_to_question: only if intent is "question": a one-sentence answer using ONLY the business facts below. If the facts don't contain the answer (for example any price marked UNKNOWN), use exactly: "Let me have {{owner_name}} confirm that and get right back to you." Otherwise null.
+- answer_to_question: only if intent is "question": a one-sentence answer using ONLY the business facts below. If the facts don't contain the answer (for example any price marked UNKNOWN), use exactly: "{{defer_line}}" Otherwise null.
 
 Hard rules:
 - Never quote a price, discount, or turnaround that is not in the facts. Never promise a same-day slot unless the facts say same-day service is available.
@@ -118,3 +118,32 @@ Sorry we missed you. We'll text you right away so we can help. Goodbye.
 
 ## q_callback_number_ask
 What's the best number for {{owner_name}} to call you back on?
+
+# Google Voice co-pilot variants (the owner sends these personally, so first person)
+
+## greeting_sms_gv
+Hi, this is {{owner_name}} at {{business_name}} — thanks for reaching out. A few quick questions so I can help.
+
+## q_callback_number_sms_gv
+Is this the best number to reach you on? Reply yes, or send a better number.
+
+## q_callback_offer_gv
+I can call you back {{window}} — does that work?
+
+## q_callback_offer_no_window_gv
+I can give you a call as soon as I'm free — does that work?
+
+## human_first_gv
+Happy to call you myself — a couple of quick details first so I'm ready.
+
+## close_booked_gv
+You're all set, {{name}}. I'll call you at {{number}} {{window}}. Thanks for reaching out to {{business_name}}!
+
+## close_booked_no_window_gv
+You're all set, {{name}}. I'll call you at {{number}} as soon as I'm free. Thanks for reaching out to {{business_name}}!
+
+## close_summary_gv
+No problem — I've got everything I need and I'll get back to you soon. Thanks for contacting {{business_name}}!
+
+## close_handoff_gv
+I understand — I'll give you a call personally as soon as I can.

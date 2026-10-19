@@ -28,6 +28,13 @@ export class TwilioTelephony implements Telephony {
   }
 }
 
+/** Google Voice co-pilot mode: there is no automated SMS path at all. */
+export class NoTelephony implements Telephony {
+  async sendSms(): Promise<SendResult> {
+    throw new Error("Automated SMS is disabled in Google Voice mode (CHANNEL=google_voice)");
+  }
+}
+
 /** In-memory provider for tests and local runs without Twilio. */
 export class FakeTelephony implements Telephony {
   sent: { to: string; body: string; sid: string }[] = [];

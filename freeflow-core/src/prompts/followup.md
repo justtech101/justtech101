@@ -18,3 +18,14 @@ Hi {{name}}, {{business_name}} again. Want me to book you in this week, or close
 
 ## step_4
 Hi {{name}}, last note from {{business_name}} — I'll close this out for now. If you ever need help with {{need}}, just reply here and {{owner_name}} will take care of you.
+
+# Google Voice co-pilot variants (the owner sends these personally)
+
+## step_2_gv
+Hi {{name}}, {{business_name}} here. {{service_note}} If you'd still like help with {{need}}, just reply and I'll give you a call.
+
+## step_2_no_note_gv
+Hi {{name}}, {{business_name}} here. If you'd still like help with {{need}}, just reply and I'll give you a call.
+
+## step_4_gv
+Hi {{name}}, last note from {{business_name}} — I'll close this out for now. If you ever need help with {{need}}, just reply here and I'll take care of you.

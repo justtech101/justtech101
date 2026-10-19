@@ -1,8 +1,10 @@
 import type { BusinessConfig } from "./config.js";
 import { approvedAmounts } from "./facts.js";
 
-export function deferLine(config: BusinessConfig): string {
-  return `Let me have ${config.owner_name} confirm that and get right back to you.`;
+export function deferLine(config: BusinessConfig, channel = "twilio"): string {
+  return channel === "google_voice"
+    ? "Let me confirm that and get right back to you."
+    : `Let me have ${config.owner_name} confirm that and get right back to you.`;
 }
 
 export interface GuardResult {
@@ -22,7 +24,7 @@ const DISCOUNT = /\b(\d+\s?%\s?off|discount|free of charge|no charge|on the hous
  * replaces the reply with the defer line. Prompts ask for this too; this code
  * makes it true even if the model slips.
  */
-export function guardReply(text: string, config: BusinessConfig): GuardResult {
+export function guardReply(text: string, config: BusinessConfig, channel = "twilio"): GuardResult {
   const violations: string[] = [];
   const allowed = approvedAmounts(config);
 
@@ -40,6 +42,6 @@ export function guardReply(text: string, config: BusinessConfig): GuardResult {
     if (!backed) violations.push(`turnaround not in config: "${t[0]}"`);
   }
 
-  if (violations.length) return { text: deferLine(config), violations };
+  if (violations.length) return { text: deferLine(config, channel), violations };
   return { text: text.trim(), violations };
 }

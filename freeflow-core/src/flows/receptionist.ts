@@ -2,14 +2,14 @@ import type { Deps } from "../core/deps.js";
 import { cancelLeadJobs, scheduleJob, type Job, type JobResult } from "../core/jobs.js";
 import { alertOwner } from "../core/notify.js";
 import { sendToLead } from "../core/outbound.js";
-import { loadPrompt, render, section } from "../core/prompts.js";
+import { loadPrompt, render, section, variant } from "../core/prompts.js";
 import { getLead, listMessages, logEvent, updateLead, type Lead } from "../core/store.js";
 import { fmtLocal } from "../core/time.js";
 import { armFollowup } from "./followup.js";
 import { intakeTurn, newIntake, questionFor, summaryText, type Channel, type IntakeState } from "./intake.js";
 
 function t(deps: Deps, key: string, extra: Record<string, string | null> = {}): string {
-  return render(section(loadPrompt("receptionist"), key), {
+  return render(variant(loadPrompt("receptionist"), key, deps.env.CHANNEL), {
     business_name: deps.config.business_name,
     owner_name: deps.config.owner_name,
     ...extra,
@@ -18,7 +18,9 @@ function t(deps: Deps, key: string, extra: Record<string, string | null> = {}): 
 
 /** Conversation so far as model turns (oldest first, consecutive roles merged). */
 export async function smsHistory(deps: Deps, lead: Lead, opener?: string) {
-  const msgs = await listMessages(deps.db, lead.id, { channel: "sms", since: lead.thread_opened_at ?? undefined });
+  // Texts plus voicemail transcripts (Google Voice mode): both are the customer talking.
+  const msgs = (await listMessages(deps.db, lead.id, { since: lead.thread_opened_at ?? undefined }))
+    .filter((m) => m.channel === "sms" || m.kind === "voicemail");
   const turns: { role: "user" | "assistant"; content: string }[] = [];
   if (opener) turns.push({ role: "user", content: opener });
   for (const m of msgs) {
@@ -97,7 +99,7 @@ async function scheduleSilenceSummary(deps: Deps, lead: Lead) {
 async function smsAiFailure(deps: Deps, lead: Lead, body: string, err: unknown) {
   const now = deps.clock();
   await logEvent(deps.db, lead.id, "error", `AI error in SMS intake: ${(err as any)?.message ?? err}`, now);
-  await sendToLead(deps, lead, render(section(loadPrompt("textback"), "error_fallback"), {
+  await sendToLead(deps, lead, render(variant(loadPrompt("textback"), "error_fallback", deps.env.CHANNEL), {
     owner_name: deps.config.owner_name,
   }), { kind: "error_fallback" });
   await updateLead(deps.db, lead.id, { status: "human", flow: null });

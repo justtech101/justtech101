@@ -1,4 +1,4 @@
-import type { Deps } from "../core/deps.js";
+import { isCopilot, type Deps } from "../core/deps.js";
 import { cancelLeadJobs } from "../core/jobs.js";
 import { alertOwner } from "../core/notify.js";
 import { sendToLead } from "../core/outbound.js";
@@ -67,7 +67,9 @@ export async function processInboundSms(deps: Deps, lead: Lead, body: string): P
   await cancelLeadJobs(deps, lead.id, "lead replied", ["followup_step"]);
 
   if (HUMAN_WORDS.has(kw)) {
-    await sendToLead(deps, lead, `Got it — I've let ${deps.config.owner_name} know, and you'll hear back personally soon.`, { kind: "handoff_ack" });
+    if (!isCopilot(deps)) {
+      await sendToLead(deps, lead, `Got it — I've let ${deps.config.owner_name} know, and you'll hear back personally soon.`, { kind: "handoff_ack" });
+    }
     await updateLead(deps.db, lead.id, { status: "human", flow: null });
     await cancelLeadJobs(deps, lead.id, "HUMAN requested");
     await logEvent(deps.db, lead.id, "handoff", `customer texted "${body.trim()}"`, now);

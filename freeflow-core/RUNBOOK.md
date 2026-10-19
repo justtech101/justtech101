@@ -1,5 +1,16 @@
 # Runbook (one page)
 
+## Google Voice mode: your day-to-day
+Every text the system wants to send arrives as an **email to you**, with a subject like
+"Text Maria (706) 555-1234: …". For each one:
+1. Open Google Voice (the link is in the email), find the conversation, and paste the draft. Edit it if you like, then send.
+2. Tap **I sent it** in the email (then Confirm). That keeps the log accurate.
+3. Or tap **Pause this lead** to take the conversation over yourself. No more drafts or follow-ups for that lead.
+
+Drafts you ignore don't block anything: follow-ups still come on schedule, and a customer
+reply still stops them. Alerts ("New lead", "HANDOFF") and the 8:00 AM summary also come
+by email. In this mode, use the CLI or admin API below for pause-all / reset.
+
 Three things you might need in a hurry: **pause everything**, **reset a lead**,
 and **read the logs**. Each one works from your phone (text the business number
 from your alert mobile), from the CLI, or from the admin API.

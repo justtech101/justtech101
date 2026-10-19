@@ -10,6 +10,7 @@ import { runDueJobs } from "./core/jobs.js";
 import { NullMailer } from "./core/notify.js";
 import { normalizePhone, prettyPhone } from "./core/phone.js";
 import { createPool } from "./core/store.js";
+import type { Gmail } from "./core/gmail.js";
 import type { SendResult, Telephony } from "./core/telephony.js";
 import { fmtLocal } from "./core/time.js";
 import { findLead, leadLog, todaysQueue } from "./flows/controls.js";
@@ -37,8 +38,18 @@ class ConsoleTelephony implements Telephony {
   }
 }
 
+/** Google Voice mode: owner emails (drafts + alerts) print here too. */
+class ConsoleGmail implements Gmail {
+  async listUnprocessed() { return []; }
+  async get(): Promise<never> { throw new Error("not used in the simulator"); }
+  async markProcessed() {}
+  async send(to: string, subject: string, text: string) {
+    console.log(`\n  [EMAIL TO ${to}] ${subject}\n  ${text.replace(/\n/g, "\n  ")}\n`);
+  }
+}
+
 async function main() {
-  const env = loadEnv({ OWNER_ALERT_NUMBER: "+17065550000", DEPLOY_ENV: "simulator", PUBLIC_BASE_URL: "http://simulator", ...process.env });
+  const env = loadEnv({ OWNER_ALERT_NUMBER: "+17065550000", GMAIL_ADDRESS: "owner@example.com", ACTION_SECRET: "simulator", DEPLOY_ENV: "simulator", PUBLIC_BASE_URL: "http://simulator", ...process.env });
   let offset = 0;
   const deps: Deps = {
     db: createPool(env.DATABASE_URL, env.DATABASE_SSL),
@@ -48,9 +59,10 @@ async function main() {
     config: loadBusinessConfig(),
     env,
     clock: () => new Date(Date.now() + offset),
+    gmail: env.CHANNEL === "google_voice" ? new ConsoleGmail() : undefined,
   };
   await migrate(deps.db);
-  console.log(`${HELP}\n\nAI: ${deps.ai instanceof DisabledAi ? "DISABLED (no ANTHROPIC_API_KEY) — you'll see the fallback paths" : env.AI_MODEL}`);
+  console.log(`${HELP}\n\nChannel: ${env.CHANNEL}${env.CHANNEL === "google_voice" ? " (texts print as draft emails to the owner)" : ""}\nAI: ${deps.ai instanceof DisabledAi ? "DISABLED (no ANTHROPIC_API_KEY) — you'll see the fallback paths" : env.AI_MODEL}`);
 
   let customer = "+17065551234";
   let n = 0;

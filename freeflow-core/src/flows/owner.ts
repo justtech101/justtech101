@@ -1,4 +1,5 @@
 import type { Deps } from "../core/deps.js";
+import { sendToOwner } from "../core/notify.js";
 import { sendToLead } from "../core/outbound.js";
 import { prettyPhone } from "../core/phone.js";
 import { logEvent, updateLead, type Lead } from "../core/store.js";
@@ -9,7 +10,7 @@ export const OWNER_HELP =
   "No number = the lead from your latest alert. Any other text pauses that lead.";
 
 async function replyToOwner(deps: Deps, text: string) {
-  if (deps.env.OWNER_ALERT_NUMBER) await deps.telephony.sendSms(deps.env.OWNER_ALERT_NUMBER, text);
+  await sendToOwner(deps, text);
 }
 
 /**

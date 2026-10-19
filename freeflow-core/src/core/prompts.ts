@@ -43,6 +43,15 @@ export function section(file: PromptFile, key: string): string {
   return s;
 }
 
+/**
+ * Google Voice co-pilot mode: the owner sends every text personally, so
+ * first-person "_gv" variants of a section win when they exist.
+ */
+export function variant(file: PromptFile, key: string, channel: string): string {
+  if (channel === "google_voice" && file[`${key}_gv`] !== undefined) return file[`${key}_gv`];
+  return section(file, key);
+}
+
 export function render(template: string, vars: Record<string, string | null | undefined>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, k) => {
     const v = vars[k];

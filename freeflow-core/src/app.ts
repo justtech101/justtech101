@@ -4,16 +4,24 @@ import { loadBusinessConfig, loadEnv, type Env } from "./core/config.js";
 import type { Deps } from "./core/deps.js";
 import { NullMailer, SmtpMailer } from "./core/notify.js";
 import { createPool } from "./core/store.js";
-import { TwilioTelephony } from "./core/telephony.js";
+import { GmailApi } from "./core/gmail.js";
+import { NoTelephony, TwilioTelephony } from "./core/telephony.js";
+import { actionRoutes } from "./routes/actions.js";
 import { leadRoutes } from "./routes/leads.js";
 import { smsRoutes } from "./routes/sms.js";
 import { voiceRoutes } from "./routes/voice.js";
 import { webhookRoutes } from "./routes/webhooks.js";
 
 export function buildDeps(env: Env = loadEnv()): Deps {
+  const googleVoice = env.CHANNEL === "google_voice";
   return {
     db: createPool(env.DATABASE_URL, env.DATABASE_SSL),
-    telephony: new TwilioTelephony(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN, env.TWILIO_PHONE_NUMBER),
+    // Google Voice mode has no automated SMS path at all: every text is a draft a person sends.
+    telephony: googleVoice ? new NoTelephony() : new TwilioTelephony(env.TWILIO_ACCOUNT_SID, env.TWILIO_AUTH_TOKEN, env.TWILIO_PHONE_NUMBER),
+    gmail:
+      env.GMAIL_REFRESH_TOKEN
+        ? new GmailApi({ clientId: env.GMAIL_CLIENT_ID, clientSecret: env.GMAIL_CLIENT_SECRET, refreshToken: env.GMAIL_REFRESH_TOKEN, address: env.GMAIL_ADDRESS })
+        : undefined,
     ai: env.AI_DISABLED || !env.ANTHROPIC_API_KEY ? new DisabledAi() : new ClaudeAi(env.ANTHROPIC_API_KEY, env.AI_MODEL),
     mailer:
       env.SMTP_HOST && env.SUMMARY_EMAIL_TO
@@ -38,6 +46,7 @@ export function buildApp(deps: Deps) {
       res.status(503).json({ ok: false });
     }
   });
+  app.use(actionRoutes(deps));
   app.use(voiceRoutes(deps));
   app.use(smsRoutes(deps));
   app.use(webhookRoutes(deps));

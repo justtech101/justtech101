@@ -12,6 +12,15 @@ services:
     healthCheckPath: /health
     envVars:
       - { key: NODE_ENV, value: production }
+      - { key: CHANNEL, value: google_voice }
+      - { key: GMAIL_CLIENT_ID, sync: false }
+      - { key: GMAIL_CLIENT_SECRET, sync: false }
+      - { key: GMAIL_REFRESH_TOKEN, sync: false }
+      - { key: GMAIL_ADDRESS, sync: false }
+      - { key: OWNER_ALERT_EMAIL, sync: false }
+      - { key: GOOGLE_VOICE_NUMBER, sync: false }
+      - { key: ACTION_SECRET, generateValue: true }
+      - { key: GV_POLL_SECONDS, value: "20" }
       - { key: DEPLOY_ENV, value: staging }
       - { key: TWILIO_VALIDATE_SIGNATURES, value: "true" }
       - { key: JOB_POLL_SECONDS, value: "60" }
