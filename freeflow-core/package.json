@@ -18,7 +18,8 @@
     "twilio": "tsx src/setup-twilio.ts",
     "simulate": "tsx src/simulate.ts",
     "ai-check": "tsx src/ai-check.ts",
-    "gmail": "tsx src/setup-gmail.ts"
+    "gmail": "tsx src/setup-gmail.ts",
+    "setup": "tsx src/setup.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

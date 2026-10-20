@@ -72,6 +72,11 @@ else is automated: capture, AI drafts, guardrails, follow-up timing, the log and
 When you're ready for full automation, switch to `CHANNEL=twilio` with nothing to rebuild.
 
 ## Your next steps, in order (Google Voice)
+**Shortcut:** on your computer, run `cd freeflow-core && npm install && npm run setup`. The
+wizard walks you through steps 1–5 below: it saves everything to a git-ignored `.env`, opens
+the Gmail sign-in, checks your real Voice emails, sends a test email and runs the AI check.
+It's safe to re-run; finished steps are skipped.
+
 1. **Google Voice settings** (voice.google.com → Settings): turn on **Messages → Forward
    messages to email**, **Calls → Get email alerts for missed calls**, and
    **Voicemail → Get voicemail via email**. Voicemail transcripts must be on.

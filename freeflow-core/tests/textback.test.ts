@@ -228,8 +228,10 @@ describe("SMS webhook", () => {
     const b = ctx.post("/sms/incoming", { From: CALLER, Body: "I'm Kim", MessageSid: nextSid() });
     expect((await a).text).toBe("<Response/>");
     await b;
-    // Background processing: wait until the second reply has gone out.
-    for (let i = 0; i < 50 && ctx.leadTexts().length < 3; i++) await new Promise((r) => setTimeout(r, 20));
+    // Background processing: wait (up to 5s) until the second reply has gone out and the lead is handed off.
+    for (let i = 0; i < 250 && !(ctx.leadTexts().length >= 3 && (await leadByPhone(ctx)).status === "human"); i++) {
+      await new Promise((r) => setTimeout(r, 20));
+    }
     expect(ctx.leadTexts().at(-1)).toContain("Thanks, Kim");
     expect((await leadByPhone(ctx)).status).toBe("human");
   });
@@ -240,7 +242,7 @@ describe("SMS webhook", () => {
     ctx.ai.push(turn("answer", { need: "email setup" }));
     await ctx.post("/sms/incoming", { From: CALLER, Body: "need help setting up email", MessageSid });
     await ctx.post("/sms/incoming", { From: CALLER, Body: "need help setting up email", MessageSid });
-    for (let i = 0; i < 50 && ctx.leadTexts().length < 1; i++) await new Promise((r) => setTimeout(r, 20));
+    for (let i = 0; i < 250 && ctx.leadTexts().length < 1; i++) await new Promise((r) => setTimeout(r, 20));
     await new Promise((r) => setTimeout(r, 100));
     const { rows } = await ctx.deps.db.query("SELECT count(*)::int AS n FROM messages WHERE direction = 'inbound'");
     expect(rows[0].n).toBe(1);

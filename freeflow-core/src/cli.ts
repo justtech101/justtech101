@@ -1,4 +1,5 @@
 // Manual controls (Phase 1 has no admin panel). Usage: npm run cli -- <command> [args]
+import "./core/load-env.js";
 import { buildDeps } from "./app.js";
 import { runDueJobs } from "./core/jobs.js";
 import { alertOwner } from "./core/notify.js";

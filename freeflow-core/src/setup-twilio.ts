@@ -4,8 +4,10 @@
 //   npm run twilio -- configure [<+1706...>]     point an existing number's webhooks here
 //   npm run twilio -- check [<+1706...>]         show what a number's webhooks point at now
 // Uses TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / PUBLIC_BASE_URL / TWILIO_PHONE_NUMBER from the env.
+import "./core/load-env.js";
 import twilio from "twilio";
 import { loadEnv } from "./core/config.js";
+import { isMain } from "./core/paths.js";
 import { normalizePhone } from "./core/phone.js";
 
 /** The four webhook settings every business number needs (see README "Deploy"). */
@@ -85,7 +87,7 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   main().catch((err) => {
     console.error(err.message ?? err);
     process.exit(1);

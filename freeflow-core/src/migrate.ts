@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { loadEnv } from "./core/config.js";
-import { MIGRATIONS_DIR } from "./core/paths.js";
+import { MIGRATIONS_DIR, isMain } from "./core/paths.js";
 import { createPool, type Db } from "./core/store.js";
 
 export async function migrate(db: Db, opts: { reset?: boolean } = {}): Promise<string[]> {
@@ -36,7 +36,7 @@ export async function migrate(db: Db, opts: { reset?: boolean } = {}): Promise<s
   return applied;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const env = loadEnv();
   const db = createPool(env.DATABASE_URL, env.DATABASE_SSL);
   migrate(db, { reset: process.argv.includes("--reset") })

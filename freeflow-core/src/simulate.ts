@@ -2,6 +2,7 @@
 // real database, real Claude (if ANTHROPIC_API_KEY is set); texts print here instead of sending.
 //   DATABASE_URL=... ANTHROPIC_API_KEY=... npm run simulate
 // Use a scratch database: the simulator writes real leads/messages/jobs.
+import "./core/load-env.js";
 import { createInterface } from "node:readline";
 import { ClaudeAi, DisabledAi } from "./core/ai.js";
 import { loadBusinessConfig, loadEnv } from "./core/config.js";

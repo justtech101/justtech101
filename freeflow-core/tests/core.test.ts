@@ -186,3 +186,21 @@ describe("live AI check harness", () => {
     expect(results).toEqual(["PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "PASS", "WARN", "PASS"]);
   });
 });
+
+describe(".env handling for local tools", () => {
+  it("parses, and updates a key in place or appends it", async () => {
+    const { parseEnv, upsertEnvLine } = await import("../src/core/dotenv.js");
+    expect(parseEnv('# c\nA=1\nB = "two words"\r\nC=\n')).toEqual({ A: "1", B: "two words", C: "" });
+    expect(upsertEnvLine("A=1\nB=2\n", "B", "3")).toBe("A=1\nB=3\n");
+    expect(upsertEnvLine("A=1", "C", "x")).toBe("A=1\nC=x\n");
+  });
+  it("recognises the entry script on any OS", async () => {
+    const { isMain } = await import("../src/core/paths.js");
+    const { pathToFileURL } = await import("node:url");
+    const saved = process.argv[1];
+    process.argv[1] = "/tmp/x/script.ts";
+    expect(isMain(pathToFileURL("/tmp/x/script.ts").href)).toBe(true);
+    expect(isMain(pathToFileURL("/tmp/x/other.ts").href)).toBe(false);
+    process.argv[1] = saved;
+  });
+});

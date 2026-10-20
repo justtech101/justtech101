@@ -1,8 +1,10 @@
 // Live check of the real model against the guardrail scenarios — run once the API key is set,
 // before any phone testing:  ANTHROPIC_API_KEY=... npm run ai-check
 // Needs no database or Twilio. Each run costs a few cents.
+import "./core/load-env.js";
 import { ClaudeAi, type Ai } from "./core/ai.js";
 import { loadBusinessConfig, loadEnv } from "./core/config.js";
+import { isMain } from "./core/paths.js";
 import type { Deps } from "./core/deps.js";
 import { factsBlock } from "./core/facts.js";
 import { guardReply } from "./core/guard.js";
@@ -88,7 +90,8 @@ export const CHECKS: ((deps: Deps) => Check)[] = [
   () => textbackCheck("Spam / wrong number is low-signal", ["wrong number"], (o) => (o.low_signal ? null : "expected low_signal=true")),
 ];
 
-async function main() {
+/** Run every check against the real model. Returns the number of FAILs. */
+export async function runAiCheck(): Promise<number> {
   const env = loadEnv({ DATABASE_URL: "unused", ...process.env });
   if (!env.ANTHROPIC_API_KEY) throw new Error("Set ANTHROPIC_API_KEY first.");
   const ai = new Spy(new ClaudeAi(env.ANTHROPIC_API_KEY, env.AI_MODEL));
@@ -116,10 +119,14 @@ async function main() {
   }
   console.log(`\n${CHECKS.length - failed - warned} pass, ${warned} warn, ${failed} fail. Slowest turn ${(slowest / 1000).toFixed(1)}s.`);
   if (slowest > 8000) console.log("WARNING: a turn took over 8s. Phone calls time out at 10s and drop to voicemail. Consider a faster AI_MODEL.");
-  if (failed) process.exitCode = 1;
+  return failed;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+async function main() {
+  if (await runAiCheck()) process.exitCode = 1;
+}
+
+if (isMain(import.meta.url)) {
   main().catch((err) => {
     console.error(err.message ?? err);
     process.exit(1);
